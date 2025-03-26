@@ -1,0 +1,3 @@
+bot:
+  # Токен бота, можно получить у @BotFather
+  token: '<TOKEN HERE>'
