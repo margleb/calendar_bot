@@ -1,8 +1,11 @@
 import asyncio
 
 from aiogram import Dispatcher, Bot
+from aiogram_dialog import setup_dialogs
+
 from config.config import get_config, BotConfig
-from handlers import get_routers
+from dialogs.create_event import dialog_create_event
+from handlers.commands import commands_router
 
 
 async def main():
@@ -13,7 +16,10 @@ async def main():
 
     # маршруты
     dp = Dispatcher()
-    dp.include_routers(*get_routers())
+    dp.include_routers(commands_router, dialog_create_event)
+
+    # запускаем dialog-manager
+    setup_dialogs(dp)
 
     await dp.start_polling(bot)
 
