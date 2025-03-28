@@ -1,4 +1,5 @@
 import operator
+from datetime import datetime, timedelta, date
 from typing import Any
 from zoneinfo import available_timezones
 
@@ -7,7 +8,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.input import TextInput, MessageInput
-from aiogram_dialog.widgets.kbd import Next, Back, Select
+from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar, CalendarConfig
 from aiogram_dialog.widgets.text import Const, Format
 
 
@@ -32,7 +33,7 @@ async def error_text(
         manager: DialogManager,
         error_: ValueError
 ):
-    await message.answer(str(error_), parse_mode=ParseMode.HTML)
+    await message.reply(str(error_), parse_mode=ParseMode.HTML)
 
 async def handle_photo(message: Message, message_input: MessageInput, manager: DialogManager):
     # Проверяем, что сообщение содержит фото
@@ -43,7 +44,7 @@ async def handle_photo(message: Message, message_input: MessageInput, manager: D
         manager.dialog_data["photo_id"] = file_id
         await manager.next()  # Переходим к следующему шагу
     else:
-        await message.answer("🔴 Пожалуйста, отправьте фотографию!")
+        await message.reply("🔴 Пожалуйста, отправьте фотографию!")
 
 async def available_cities(**kwargs):
     cities = [
@@ -57,7 +58,22 @@ async def available_cities(**kwargs):
 
 async def selected_city(callback: CallbackQuery, widget: Any, manager: DialogManager, city: str):
     manager.dialog_data["selected_city"] = city
-    # await manager.next()  # Переходим к следующему шагу
+    await manager.next()  # Переходим к следующему шагу
+
+# Создаем конфигурацию для календаря
+# calendar_config = CalendarConfig(
+#    min_date=datetime.now().date(),
+#    max_date=datetime.now().date() + timedelta(days=365)
+# )
+
+async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
+    if selected_date < datetime.now().date():
+        # Если дата в прошлом - показываем предупреждение
+        await callback.answer("Нельзя запланировать событие на прошедшую дату!", show_alert=True)
+    else:
+        # Если дата валидна - сохраняем и уведомляем
+        manager.dialog_data["selected_date"] = selected_date
+    await manager.next()  # Переходим к следующему шагу
 
 dialog_create_event = Dialog(
     Window(
@@ -103,5 +119,14 @@ dialog_create_event = Dialog(
         Back(Const('Назад')),
         getter=available_cities,
         state=CreateEventDialog.city,
+    ),
+    Window(
+        Const('Выберите дату проведения мероприятия:'),
+        Calendar(
+            id='event_calendar',
+            on_click=on_date_selected
+        ),
+        Back(Const('Назад')),
+        state=CreateEventDialog.datetime,
     ),
 )
