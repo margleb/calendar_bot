@@ -1,20 +1,21 @@
+import operator
 from typing import Any
+from zoneinfo import available_timezones
 
-from aiogram.enums import ContentType, ParseMode
-from aiogram.filters import Filter
+from aiogram.enums import ParseMode
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.input import TextInput, MessageInput
-from aiogram_dialog.widgets.kbd import Next, Back
-from aiogram_dialog.widgets.text import Const
+from aiogram_dialog.widgets.kbd import Next, Back, Select
+from aiogram_dialog.widgets.text import Const, Format
 
 
 class CreateEventDialog(StatesGroup):
     title = State() # что
     description = State() # описание
     photo = State() # фото
-    address = State() # где
+    city = State() # где
     datetime = State() # дата/время
 
 def validate_text(title: str, min_letters: int, max_letters: int):
@@ -40,9 +41,23 @@ async def handle_photo(message: Message, message_input: MessageInput, manager: D
         file_id = photo.file_id
         # Сохраняем file_id в DialogManager (например, в dialog_data)
         manager.dialog_data["photo_id"] = file_id
-        await manager.done()  # Переходим к следующему шагу
+        await manager.next()  # Переходим к следующему шагу
     else:
         await message.answer("🔴 Пожалуйста, отправьте фотографию!")
+
+async def available_cities(**kwargs):
+    cities = [
+        ("Москва", '1'),
+        ("Санкт-Петербург", '2'),
+    ]
+    return {
+        "cities": cities,
+        "count": len(cities),
+    }
+
+async def selected_city(callback: CallbackQuery, widget: Any, manager: DialogManager, city: str):
+    manager.dialog_data["selected_city"] = city
+    # await manager.next()  # Переходим к следующему шагу
 
 dialog_create_event = Dialog(
     Window(
@@ -75,5 +90,18 @@ dialog_create_event = Dialog(
         ),
         Back(Const('Назад')),
         state=CreateEventDialog.photo,
+    ),
+    Window(
+        Const('Укажите город:'),
+        Select(
+            Format("{item[0]}"),
+            id="s_cities",
+            item_id_getter=operator.itemgetter(0),
+            items="cities",
+            on_click=selected_city,
+        ),
+        Back(Const('Назад')),
+        getter=available_cities,
+        state=CreateEventDialog.city,
     ),
 )
