@@ -1,6 +1,6 @@
 from typing import Any
 
-from aiogram.enums import ContentType
+from aiogram.enums import ContentType, ParseMode
 from aiogram.filters import Filter
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
@@ -20,10 +20,10 @@ class CreateEventDialog(StatesGroup):
 def validate_text(title: str, min_letters: int, max_letters: int):
     # Проверка, что title не состоит только из цифр
     if title.replace(" ", "").isdigit():
-        raise ValueError("Текст не может состоять только из цифр")
+        raise ValueError("🔴 Текст не может состоять только из цифр")
     # Проверка длины
     if len(title) < min_letters or len(title) > max_letters:
-        raise ValueError(f"Текст должен быть {min_letters} - {max_letters} символов")
+        raise ValueError(f"🔴 Текст должен быть <b>{min_letters} - {max_letters}</b> символов")
 
 async def error_text(
         message: Message,
@@ -31,7 +31,7 @@ async def error_text(
         manager: DialogManager,
         error_: ValueError
 ):
-    await message.answer(str(error_))
+    await message.answer(str(error_), parse_mode=ParseMode.HTML)
 
 async def handle_photo(message: Message, message_input: MessageInput, manager: DialogManager):
     # Проверяем, что сообщение содержит фото
@@ -42,7 +42,7 @@ async def handle_photo(message: Message, message_input: MessageInput, manager: D
         manager.dialog_data["photo_id"] = file_id
         await manager.done()  # Переходим к следующему шагу
     else:
-        await message.answer("Пожалуйста, отправьте фотографию!")
+        await message.answer("🔴 Пожалуйста, отправьте фотографию!")
 
 dialog_create_event = Dialog(
     Window(
