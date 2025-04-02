@@ -2,6 +2,7 @@ import operator
 from datetime import datetime, date
 from typing import Any
 
+from aiogram.dispatcher.middlewares.user_context import EventContext
 from aiogram.enums import ContentType
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
@@ -18,20 +19,22 @@ class CreateEventDialog(StatesGroup):
     description = State() # описание
     photo = State() # фото
     city = State() # где
-    date = State() # когда
+    date = State() # дата
     result = State() # событие
 
-async def get_event_data(dialog_manager: DialogManager, **kwargs) -> dict:
+async def get_event_data(dialog_manager: DialogManager, event_context: EventContext, **kwargs) -> dict:
     image_id = dialog_manager.dialog_data['photo']  # Your file_id
     city = dialog_manager.dialog_data['city']
     date_event = dialog_manager.dialog_data['selected_date']
     image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(image_id))
+    username = event_context.chat.username  # получаем username
     return {
         'title': dialog_manager.find('title').get_value(),
         'description': dialog_manager.find('description').get_value(),
         'photo': image,
         'city': city,
-        'date': date_event
+        'date': date_event,
+        'username': username
     }
 
 async def handle_photo(message: Message, message_input: MessageInput, manager: DialogManager):
@@ -104,12 +107,13 @@ dialog_create_event = Dialog(
     Window(
         DynamicMedia("photo"),
         Jinja(
-            "<b>You entered</b>:\n\n"
+            "\n\n"
+            "{{description}}\n\n"
+            "<b>______</b>\n"
             "<b>Что</b> {{title}}\n"
-            "<b>Описание:</b> {{description}}\n"
-            "<b>Когда:</b> {{description}}\n"
-            "<b>Город:</b> {{city}}\n"
+            "<b>Где:</b> {{city}}\n"
             "<b>Дата:</b> {{date}}\n"
+            "<b>Пишите:</b> @{{username}}\n"
         ),
         parse_mode="HTML",
         getter=get_event_data,
