@@ -3,7 +3,7 @@ from datetime import datetime, date
 from typing import Any
 
 from aiogram.dispatcher.middlewares.user_context import EventContext
-from aiogram.enums import ContentType
+from aiogram.enums import ContentType, ParseMode
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
@@ -23,9 +23,9 @@ class CreateEventDialog(StatesGroup):
     result = State() # событие
 
 async def get_event_data(dialog_manager: DialogManager, event_context: EventContext, **kwargs) -> dict:
-    image_id = dialog_manager.dialog_data['photo']  # Your file_id
     city = dialog_manager.dialog_data['city']
     date_event = dialog_manager.dialog_data['selected_date']
+    image_id = dialog_manager.dialog_data['photo']  # Your file_id
     image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(image_id))
     username = event_context.chat.username  # получаем username
     return {
@@ -42,7 +42,7 @@ async def handle_photo(message: Message, message_input: MessageInput, manager: D
         manager.dialog_data['photo'] = message.photo[-1].file_id
         await manager.next()
     else:
-        await message.reply('Пожалуйста, загрузите фотографию мероприятия')
+        await message.reply('🔴 Пожалуйста, загрузите свою фотографию')
 
 async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
     if selected_date < datetime.now().date():
@@ -57,11 +57,30 @@ async def selected_city(callback: CallbackQuery, widget: Any, manager: DialogMan
     manager.dialog_data['city'] = city
     await manager.next()
 
+def validate_text(title: str, min_letters: int, max_letters: int) -> str:
+    # Проверка, что текст не состоит только из цифр
+    if title.replace(" ", "").isdigit():
+        raise ValueError("🔴 Текст не может состоять только из цифр")
+    # Проверка длины
+    if len(title) < min_letters or len(title) > max_letters:
+        raise ValueError(f"🔴 Текст должен быть <b>{min_letters} - {max_letters}</b> символов")
+    return title
+
+async def error_text(
+        message: Message,
+        dialog_: Any,
+        manager: DialogManager,
+        error_: ValueError
+):
+    await message.reply(str(error_), parse_mode=ParseMode.HTML)
+
 dialog_create_event = Dialog(
     Window(
         Const('Название мероприятия:'),
         TextInput(
             id='title',
+            type_factory=lambda x: validate_text(x, 5, 20),
+            on_error=error_text,
             on_success=Next()
         ),
         state=CreateEventDialog.title
@@ -70,6 +89,8 @@ dialog_create_event = Dialog(
         Const('Описание мероприятия:'),
         TextInput(
             id='description',
+            type_factory=lambda x: validate_text(x, 15, 150),
+            on_error=error_text,
             on_success=Next()
         ),
         Back(Const('Назад')),
