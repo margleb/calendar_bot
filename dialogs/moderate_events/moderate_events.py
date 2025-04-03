@@ -18,7 +18,7 @@ async def get_events_data(dialog_manager, **kwargs):
 
     # Получаем общее количество событий
     session = dialog_manager.middleware_data.get("session")
-    total_events = await session.scalar(select(func.count(Event.id)))
+    total_events = await session.scalar(select(func.count(Event.id)).where(Event.moderation == False))
 
     # Получаем текущее событие
     stmt = select(Event).order_by(Event.id).offset(current_index).limit(1)
