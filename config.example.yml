@@ -1,3 +1,7 @@
 bot:
   # Токен бота, можно получить у @BotFather
   token: '<TOKEN HERE>'
+
+db:
+  dns: "postgresql+psycopg://superuser:superpassword@127.0.0.1/data"
+  is_echo: "yes"

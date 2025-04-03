@@ -3,7 +3,7 @@ from functools import lru_cache
 from os import getenv
 from typing import TypeVar, Type
 
-from pydantic import SecretStr, BaseModel
+from pydantic import SecretStr, BaseModel, PostgresDsn
 from yaml import load
 
 try:
@@ -14,6 +14,10 @@ except ImportError:
 @dataclass
 class BotConfig(BaseModel):
     token: SecretStr
+
+class DbConfig(BaseModel):
+    dsn: PostgresDsn
+    is_echo: bool
 
 ConfigType = TypeVar("ConfigType", bound=BaseModel)
 
