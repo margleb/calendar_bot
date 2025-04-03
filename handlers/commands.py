@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from dialogs.create_event import CreateEventDialog
+from dialogs.create_event.create_event import CreateEventDialog
 
 router = Router(name='user commands')
 

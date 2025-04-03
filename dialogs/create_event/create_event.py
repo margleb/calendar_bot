@@ -1,15 +1,12 @@
-from aiogram.dispatcher.middlewares.user_context import EventContext
-from aiogram.enums import ContentType
-from aiogram_dialog import Dialog, Window, DialogManager
-from aiogram_dialog.api.entities import MediaId, MediaAttachment
+from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja, Format
 
-from dialogs.getters import get_event_data
-from dialogs.handlers import error_text, validate_text, selected_city, on_date_selected, handle_photo
-from dialogs.states import CreateEventDialog
+from dialogs.create_event.getters import get_event_data
+from dialogs.create_event.handlers import error_text, validate_text, selected_city, on_date_selected, handle_photo
+from dialogs.create_event.states import CreateEventDialog
 
 dialog_create_event = Dialog(
     Window(
@@ -70,7 +67,7 @@ dialog_create_event = Dialog(
             "<b>______</b>\n"
             "<b>Что</b> {{title}}\n"
             "<b>Где:</b> {{city}}\n"
-            "<b>Дата:</b> {{date}}\n"
+            "<b>Когда:</b> {{date}}\n"
             "<b>Пишите:</b> @{{username}}\n"
         ),
         parse_mode="HTML",

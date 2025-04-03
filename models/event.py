@@ -16,8 +16,10 @@ class Event(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_user_id: Mapped[int] = mapped_column(BigInteger)
-    title: Mapped[str] = mapped_column(String(30))
+    image_id: Mapped[str] = mapped_column(String)
+    title: Mapped[str] = mapped_column(String(50))
     description: Mapped[str] = mapped_column(Text)
     city: Mapped[CityEnum] = mapped_column(Enum(CityEnum, values_callable=lambda x: [e.value for e in x]))
     date: Mapped[datetime] = mapped_column(DateTime)
+    username: Mapped[str] = mapped_column(String)
     moderation: Mapped[bool] = mapped_column(Boolean, server_default='false')
