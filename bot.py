@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from config.config import get_config, BotConfig, DbConfig
 from dialogs.create_event import dialog_create_event
-from handlers.commands import commands_router
+from handlers import get_routes
 from middlewares.session import DbSessionMiddleware
 from models import Base, Event
 from models.event import CityEnum
@@ -23,8 +23,8 @@ async def main():
     bot = Bot(token=bot_config.token.get_secret_value())
 
     # маршруты
-    dp = Dispatcher()
-    dp.include_routers(commands_router, dialog_create_event)
+    dp = Dispatcher(admin_id=bot_config.admin_id)
+    dp.include_routers(*get_routes(), dialog_create_event)
 
     # запускаем dialog-manager
     setup_dialogs(dp)

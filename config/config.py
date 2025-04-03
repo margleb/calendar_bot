@@ -14,6 +14,7 @@ except ImportError:
 @dataclass
 class BotConfig(BaseModel):
     token: SecretStr
+    admin_id: int
 
 class DbConfig(BaseModel):
     dsn: PostgresDsn
