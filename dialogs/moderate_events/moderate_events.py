@@ -1,3 +1,4 @@
+from aiogram import F
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
@@ -12,54 +13,51 @@ class ModerateEvents(StatesGroup):
     events = State()
 
 
-async def get_events_data(dialog_manager, **kwargs):
-    # Получаем текущий индекс из данных диалога
-    current_index = dialog_manager.dialog_data.get("current_index", 0)
-
-    # Получаем общее количество событий
+async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
     session = dialog_manager.middleware_data.get("session")
-    total_events = await session.scalar(select(func.count(Event.id)).where(Event.moderation == False))
+    current_index = dialog_manager.dialog_data.get("current_index")
 
-    # Получаем текущее событие
-    stmt = select(Event).order_by(Event.id).offset(current_index).limit(1)
-    current_event = await session.scalar(stmt)
+    event = await session.scalar(select(Event).where(Event.moderation.is_(False)).limit(1).offset(current_index))
+    total_events = await session.scalar(select(func.count(Event.id)).where(Event.moderation.is_(False)))
+    dialog_manager.dialog_data['total_events'] = total_events
 
     return {
-        "event": current_event,
-        "current_position": current_index + 1,
-        "total_events": total_events,
+        "description": event.description,
+        "title": event.title,
+        "city": event.city.value,
+        "date": event.date,
+        "username": event.username,
     }
 
 
 async def on_prev_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
-    current_index = dialog_manager.dialog_data.get("current_index", 0)
-    if current_index > 0:
-        dialog_manager.dialog_data["current_index"] = current_index - 1
+    data = dialog_manager.dialog_data
+    current_index = data.get("current_index", 0)
+    total_events = data["total_events"]  # Без .get(), так как total_events должен быть
+
+    data["current_index"] = (current_index - 1) % total_events
 
 
 async def on_next_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
-    current_index = dialog_manager.dialog_data.get("current_index", 0)
-    session = dialog_manager.middleware_data.get("session")
-    total_events = await session.scalar(select(func.count(Event.id)))
+    data = dialog_manager.dialog_data
+    current_index = data.get("current_index", 0)
+    total_events = data["total_events"]
 
-    if current_index < total_events - 1:
-        dialog_manager.dialog_data["current_index"] = current_index + 1
-
+    data["current_index"] = (current_index + 1) % total_events
 
 dialog_moderate_dialog = Dialog(
     Window(
         Jinja(
-            "\n\n"
-            "{{event.description}}\n\n"
-            "<b>______</b>\n"
-            "<b>Что:</b> {{event.title}}\n"
-            "<b>Где:</b> {{event.city.value}}\n"
-            "<b>Когда:</b> {{event.date}}\n"
-            "<b>Пишите:</b> @{{event.username}}\n"
+            "{{description}}\n\n"
+            "<b>______</b>\n\n"
+            "<b>Что</b> {{title}}\n"
+            "<b>Где:</b> {{city}}\n"
+            "<b>Когда:</b> {{date}}\n"
+            "<b>Пишите:</b> @{{username}}\n"
         ),
         Row(
-            Button(Const("◀ Назад"), id="prev_event", on_click=on_prev_event),
-            Button(Const("▶ Вперед"), id="next_event", on_click=on_next_event),
+            Button(Const("◀ Назад"), id="prev_event", on_click=on_prev_event, when=F["dialog_data"]["total_events"] > 1),
+            Button(Const("▶ Вперед"), id="next_event", on_click=on_next_event, when=F["dialog_data"]["total_events"] > 1),
         ),
         parse_mode="HTML",
         state=ModerateEvents.events,

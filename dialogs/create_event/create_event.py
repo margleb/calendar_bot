@@ -62,9 +62,8 @@ dialog_create_event = Dialog(
     Window(
         DynamicMedia("photo"),
         Jinja(
-            "\n\n"
             "{{description}}\n\n"
-            "<b>______</b>\n"
+            "<b>______</b>\n\n"
             "<b>Что</b> {{title}}\n"
             "<b>Где:</b> {{city}}\n"
             "<b>Когда:</b> {{date}}\n"

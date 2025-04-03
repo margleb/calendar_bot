@@ -40,9 +40,9 @@ async def main():
     #     await conn.execute(text("SELECT 1"))
 
     # созданием таблицы
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+    # async with engine.begin() as conn:
+    #     await conn.run_sync(Base.metadata.drop_all)
+    #     await conn.run_sync(Base.metadata.create_all)
 
     # Создаем сессию
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
@@ -85,7 +85,8 @@ async def main():
     #             description=random.choice(descriptions),
     #             city=random.choice(list(CityEnum)).value,
     #             date=datetime.now() + timedelta(days=random.randint(1, 30)),
-    #             username=random.choice(usernames)
+    #             username=random.choice(usernames),
+    #             moderation=random.choice([True, False]),
     #         ) for i in range(1, 5)  # Генерируем 4 события
     #     ]
     #
