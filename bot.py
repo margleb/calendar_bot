@@ -1,4 +1,6 @@
 import asyncio
+from datetime import datetime
+from enum import Enum
 
 from aiogram import Dispatcher, Bot
 from aiogram_dialog import setup_dialogs
@@ -10,7 +12,8 @@ from config.config import get_config, BotConfig, DbConfig
 from dialogs.create_event import dialog_create_event
 from handlers.commands import commands_router
 from middlewares.session import DbSessionMiddleware
-from models import Base
+from models import Base, Event
+from models.event import CityEnum
 
 
 async def main():
@@ -18,6 +21,13 @@ async def main():
     # экземпляр бота
     bot_config = get_config(BotConfig, 'bot')
     bot = Bot(token=bot_config.token.get_secret_value())
+
+    # маршруты
+    dp = Dispatcher()
+    dp.include_routers(commands_router, dialog_create_event)
+
+    # запускаем dialog-manager
+    setup_dialogs(dp)
 
     # создаем engine
     db_config = get_config(DbConfig, 'db')
@@ -36,15 +46,19 @@ async def main():
         await conn.run_sync(Base.metadata.create_all)
 
     # Создаем сессию
-    # session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+    async with session_maker() as session:
+        session.add(Event(
+            tg_user_id=123456,
+            title='Название мероприятия',
+            description='Описание мероприятия',
+            city=CityEnum.moscow.value,
+            date=datetime.strptime('2025-04-03', '%Y-%m-%d'),
+        ))
+        await session.commit()
+
     # dp.update.outer_middleware(DbSessionMiddleware(session_maker))
-
-    # маршруты
-    dp = Dispatcher()
-    dp.include_routers(commands_router, dialog_create_event)
-
-    # запускаем dialog-manager
-    setup_dialogs(dp)
 
     await dp.start_polling(bot)
 
