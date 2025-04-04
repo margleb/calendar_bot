@@ -1,12 +1,14 @@
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput, MessageInput
-from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar
+from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar, Button
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja, Format
 
 from dialogs.create_event.getters import get_event_data
-from dialogs.create_event.handlers import error_text, validate_text, selected_city, on_date_selected, handle_photo
+from dialogs.create_event.handlers import error_text, validate_text, selected_city, on_date_selected, handle_photo, \
+    on_public_event
 from dialogs.create_event.states import CreateEventDialog
+
 
 dialog_create_event = Dialog(
     Window(
@@ -69,6 +71,7 @@ dialog_create_event = Dialog(
             "<b>Когда:</b> {{date}}\n"
             "<b>Пишите:</b> @{{username}}\n"
         ),
+        Button(Const('Опубликовать событие'), id='public_event', on_click=on_public_event),
         parse_mode="HTML",
         getter=get_event_data,
         state=CreateEventDialog.result
