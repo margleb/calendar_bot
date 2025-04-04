@@ -1,4 +1,6 @@
+from aiogram.enums import ContentType
 from aiogram_dialog import DialogManager
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from sqlalchemy import select, func
 
 from models import Event
@@ -34,10 +36,12 @@ async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
     dialog_manager.dialog_data['total_events'] = total_events
     dialog_manager.dialog_data['event_id'] = event.id
     dialog_manager.dialog_data['no_events'] = False
+    image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(event.image_id))
 
     return {
-        "description": event.description,
         "title": event.title,
+        "description": event.description,
+        "photo": image,
         "city": event.city.value,
         "date": event.date,
         "username": event.username,

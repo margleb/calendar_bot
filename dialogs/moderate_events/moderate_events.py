@@ -1,6 +1,7 @@
 from aiogram import F
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import Button, Row
+from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja
 
 from dialogs.moderate_events.getters import get_events_data
@@ -9,6 +10,7 @@ from dialogs.moderate_events.states import ModerateEvents
 
 dialog_moderate_dialog = Dialog(
     Window(
+DynamicMedia("photo", when=~F["dialog_data"]["no_events"]),
         Jinja(
             "{% if no_events %}"
             "{{message}}"
