@@ -3,7 +3,7 @@ from datetime import date
 from aiogram.types import InlineKeyboardButton
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd.calendar_kbd import CalendarScopeView, CalendarDaysView, Calendar, CalendarScope, \
-    CalendarMonthView, CalendarYearsView
+    CalendarMonthView, CalendarYearsView, CalendarUserConfig
 from aiogram_dialog.widgets.text import Format
 from sqlalchemy import select, and_
 
@@ -42,7 +42,19 @@ class EventCalendarDaysView(CalendarDaysView):
         if selected_date == today:
             text = self.today_text
         elif total_events > 0:
-            text = self.date_text + f" событий: ({total_events})"
+            # Чередующиеся эмодзи в зависимости от количества событий
+            if 1 <= total_events <= 2:
+                emoji = "🟢"  # зеленый
+            elif 3 <= total_events <= 5:
+                emoji = "🟡"  # желтый
+            elif 6 <= total_events <= 8:
+                emoji = "🟠"  # оранжевый
+            elif 9 <= total_events <= 12:
+                emoji = "🔴"  # красный
+            else:
+                emoji = "💥"  # для очень большого количества
+
+            text = self.date_text + f" {emoji}"
         else:
             text = self.date_text
 
