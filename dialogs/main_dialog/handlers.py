@@ -2,7 +2,7 @@ from datetime import date
 
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
-from sqlalchemy import and_, select
+from sqlalchemy import and_, select, func
 
 from dialogs.create_event.states import CreateEventDialog
 from models import Event
@@ -11,7 +11,7 @@ from models import Event
 async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
 
     session = manager.middleware_data["session"]
-    stmt = select(Event.id).where(
+    stmt = select(func.count(Event.id)).where(
         and_(
             Event.date == selected_date,
             Event.moderation  # True
