@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from aiogram.types import InlineKeyboardButton
 from aiogram_dialog import DialogManager
@@ -77,3 +77,11 @@ class EventCalendar(Calendar):
             CalendarScope.MONTHS: CalendarMonthView(self._item_callback_data),
             CalendarScope.YEARS: CalendarYearsView(self._item_callback_data),
         }
+    async def _get_user_config(
+            self,
+            data: dict,
+            manager: DialogManager,
+    ) -> CalendarUserConfig:
+        return CalendarUserConfig(
+            min_date=datetime.now().date(), # минимальная дата - сегодня
+        )

@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput, MessageInput
-from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar, Button
+from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar, Button, CalendarConfig
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja, Format
 
@@ -56,7 +58,10 @@ dialog_create_event = Dialog(
         Const('Выберите дату проведения мероприятия:'),
         Calendar(
             id='calendar',
-            on_click=on_date_selected
+            on_click=on_date_selected,
+            config=CalendarConfig(
+                min_date=datetime.now().date()
+            )
         ),
         Back(Const('Назад')),
         state=CreateEventDialog.date,

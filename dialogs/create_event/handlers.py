@@ -21,12 +21,12 @@ async def handle_photo(message: Message, message_input: MessageInput, manager: D
 
 
 async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
-    if selected_date < datetime.now().date():
-        # Если дата в прошлом - показываем предупреждение
-        await callback.answer("Нельзя запланировать событие на прошедшую дату.", show_alert=True)
-    else:
-        # Если дата валидна - сохраняем и уведомляем
-        manager.dialog_data["selected_date"] = selected_date
+    # if selected_date < datetime.now().date():
+    #     # Если дата в прошлом - показываем предупреждение
+    #     await callback.answer("Нельзя запланировать событие на прошедшую дату.", show_alert=True)
+    # else:
+    # Если дата валидна - сохраняем и уведомляем
+    manager.dialog_data["selected_date"] = selected_date
     await manager.next()  # Переходим к следующему шагу
 
 
