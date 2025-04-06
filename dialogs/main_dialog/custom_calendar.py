@@ -5,7 +5,7 @@ from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd.calendar_kbd import CalendarScopeView, CalendarDaysView, Calendar, CalendarScope, \
     CalendarMonthView, CalendarYearsView, CalendarUserConfig
 from aiogram_dialog.widgets.text import Format
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 
 from models import Event
 
@@ -27,7 +27,7 @@ class EventCalendarDaysView(CalendarDaysView):
     ) -> InlineKeyboardButton:
 
         session = manager.middleware_data["session"]
-        stmt = select(Event.id).where(
+        stmt = select(func.count(Event.id)).where(
             and_(
                 Event.date == selected_date,
                 Event.moderation # True
@@ -53,7 +53,7 @@ class EventCalendarDaysView(CalendarDaysView):
                 emoji = "🔴"  # красный
             else:
                 emoji = "💥"  # для очень большого количества
-
+            print(total_events)
             text = self.date_text + f" {emoji}"
         else:
             text = self.date_text

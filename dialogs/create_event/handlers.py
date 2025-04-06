@@ -20,16 +20,6 @@ async def handle_photo(message: Message, message_input: MessageInput, manager: D
         await message.reply('🔴 Пожалуйста, загрузите свою фотографию')
 
 
-async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
-    # if selected_date < datetime.now().date():
-    #     # Если дата в прошлом - показываем предупреждение
-    #     await callback.answer("Нельзя запланировать событие на прошедшую дату.", show_alert=True)
-    # else:
-    # Если дата валидна - сохраняем и уведомляем
-    manager.dialog_data["selected_date"] = selected_date
-    await manager.next()  # Переходим к следующему шагу
-
-
 async def selected_city(callback: CallbackQuery, widget: Any, manager: DialogManager, city: str):
     manager.dialog_data['city'] = city
     await manager.next()
@@ -67,7 +57,7 @@ async def on_public_event(callback: CallbackQuery, button: Button, dialog_manage
             title=dialog_manager.find('title').get_value(),
             description=dialog_manager.find('description').get_value(),
             city=event_data.get("city"),
-            date=event_data.get("selected_date"),
+            date=dialog_manager.start_data["selected_date"],
             username=callback.from_user.username,
             moderation=False,
         )

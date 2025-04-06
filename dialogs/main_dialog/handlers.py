@@ -25,4 +25,5 @@ async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManag
 
 
 async def create_event(callback: CallbackQuery, widget, manager: DialogManager):
-    await manager.start(CreateEventDialog.title)
+    selected_date = manager.dialog_data["selected_date"]
+    await manager.start(CreateEventDialog.title, data={"selected_date": selected_date})
