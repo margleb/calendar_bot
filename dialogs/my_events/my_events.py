@@ -21,6 +21,7 @@ DynamicMedia("photo", when=~F["dialog_data"]["no_events"]),
             "<b>Где:</b> {{city}}\n"
             "<b>Когда:</b> {{date}}\n"
             "<b>Пишите:</b> @{{username}}\n"
+            "<b>Модерация:</b> {% if moderate %}одобрено{% else %}на модерации{% endif %}\n"
             "{% endif %}"
         ),
         Row(

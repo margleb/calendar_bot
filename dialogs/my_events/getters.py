@@ -12,12 +12,7 @@ async def get_events_data(dialog_manager: DialogManager, event_context: EventCon
     # Получаем событие для модерации
     event = await session.scalar(
         select(Event)
-        .where(
-            and_(
-                Event.moderation.is_(True),
-                Event.tg_user_id == event_context.user.id
-            )
-        )
+        .where(Event.tg_user_id == event_context.user.id)
         .limit(1)
         .offset(current_index)
     )
@@ -25,12 +20,7 @@ async def get_events_data(dialog_manager: DialogManager, event_context: EventCon
     # Получаем общее количество событий для модерации
     total_events = await session.scalar(
         select(func.count(Event.id))
-        .where(
-            and_(
-                Event.moderation.is_(True),
-                Event.tg_user_id == event_context.user.id
-            )
-        )
+        .where(Event.tg_user_id == event_context.user.id)
     )
 
     # Если событий нет
@@ -54,4 +44,5 @@ async def get_events_data(dialog_manager: DialogManager, event_context: EventCon
         "city": event.city.value,
         "date": event.date,
         "username": event.username,
+        "moderate": event.moderation,
     }
