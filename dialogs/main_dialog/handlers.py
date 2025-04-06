@@ -12,9 +12,11 @@ from models import Event
 async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
 
     session = manager.middleware_data["session"]
+    selected_city = manager.dialog_data["selected_city"]
     stmt = select(func.count(Event.id)).where(
         and_(
             Event.date == selected_date,
+            Event.city == selected_city,
             Event.moderation  # True
         )
     )
@@ -27,7 +29,8 @@ async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManag
 
 async def create_event(callback: CallbackQuery, widget, manager: DialogManager):
     selected_date = manager.dialog_data["selected_date"]
-    await manager.start(CreateEventDialog.title, data={"selected_date": selected_date})
+    selected_city = manager.dialog_data["selected_city"]
+    await manager.start(CreateEventDialog.title, data={"selected_date": selected_date, "selected_city": selected_city})
 
 
 async def on_prev_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
@@ -44,3 +47,7 @@ async def on_next_event(callback: CallbackQuery, button: Button, dialog_manager:
     total_events = data["total_events"]
 
     data["current_index"] = (current_index + 1) % total_events
+
+async def on_select_city(callback: CallbackQuery, widget, manager: DialogManager, selected_city: str):
+    manager.dialog_data["selected_city"] = selected_city
+    await manager.next()

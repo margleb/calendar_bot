@@ -27,10 +27,12 @@ class EventCalendarDaysView(CalendarDaysView):
     ) -> InlineKeyboardButton:
 
         session = manager.middleware_data["session"]
+        selected_city = manager.dialog_data["selected_city"]
         stmt = select(func.count(Event.id)).where(
             and_(
                 Event.date == selected_date,
-                Event.moderation # True
+                Event.moderation, # True
+                Event.city == selected_city
             )
         )
         total_events = await session.scalar(stmt) or 0

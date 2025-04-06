@@ -44,18 +44,6 @@ dialog_create_event = Dialog(
         state=CreateEventDialog.photo,
     ),
     Window(
-        Const('Укажите город:'),
-        Select(
-            Format("{item}"),
-            id='city',
-            item_id_getter=lambda x: x,
-            items=['Москва', 'Санкт-Петербург'],
-            on_click=selected_city
-        ),
-        Back(Const('Назад')),
-        state=CreateEventDialog.city
-    ),
-    Window(
         DynamicMedia("photo"),
         Jinja(
             "{{description}}\n\n"

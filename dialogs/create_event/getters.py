@@ -4,7 +4,7 @@ from aiogram_dialog.api.entities import MediaAttachment, EventContext, MediaId
 
 
 async def get_event_data(dialog_manager: DialogManager, event_context: EventContext, **kwargs) -> dict:
-    city = dialog_manager.dialog_data['city']
+    city = dialog_manager.start_data['selected_city']
     date_event = dialog_manager.start_data['selected_date']
     image_id = dialog_manager.dialog_data['photo']  # Your file_id
     image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(image_id))
