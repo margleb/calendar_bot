@@ -30,6 +30,7 @@ async def on_accept_event(callback: CallbackQuery, button: Button, dialog_manage
 
     await session.execute(stmt)
     await session.commit()
+    await session.close()
 
 async def on_reject_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
 
@@ -39,3 +40,4 @@ async def on_reject_event(callback: CallbackQuery, button: Button, dialog_manage
 
     await session.execute(stmt)
     await session.commit()
+    await session.close()

@@ -65,6 +65,7 @@ async def on_public_event(callback: CallbackQuery, button: Button, dialog_manage
         # Выполняем запрос
         await session.execute(stmt)
         await session.commit()
+        await session.close()
 
         await callback.answer("✅ Событие успешно опубликовано и отправлено на модерацию!")
         await dialog_manager.done()  # Закрываем диалог

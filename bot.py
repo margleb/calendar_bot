@@ -9,6 +9,7 @@ from dialogs.create_event.create_event import dialog_create_event
 from dialogs.main_dialog.main_dialog import dialog_main_dialog
 from dialogs.moderate_events.moderate_events import dialog_moderate_dialog
 from handlers import get_routes
+from handlers.main_menu import set_main_menu
 from middlewares.session import DbSessionMiddleware
 from models import Base
 
@@ -41,6 +42,10 @@ async def main():
     # Создаем сессию
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
     dp.update.outer_middleware(DbSessionMiddleware(session_maker))
+
+    # Регистрируем асинхронную функцию в диспетчере,
+    # которая будет выполняться на старте бота,
+    dp.startup.register(set_main_menu)
 
     await dp.start_polling(bot)
 

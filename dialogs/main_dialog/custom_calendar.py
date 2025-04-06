@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from aiogram.types import InlineKeyboardButton
 from aiogram_dialog import DialogManager
@@ -88,6 +88,9 @@ class EventCalendar(Calendar):
             data: dict,
             manager: DialogManager,
     ) -> CalendarUserConfig:
+        today = datetime.now().date()
+        max_date = today + timedelta(days=180) # 6 месяцев
         return CalendarUserConfig(
-            min_date=datetime.now().date(), # минимальная дата - сегодня
+            min_date=today, # минимальная дата - сегодня
+            max_date=max_date, # максимальная дата - не более полугода
         )
