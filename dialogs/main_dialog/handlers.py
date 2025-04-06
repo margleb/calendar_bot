@@ -2,6 +2,7 @@ from datetime import date
 
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy import and_, select, func
 
 from dialogs.create_event.states import CreateEventDialog
@@ -27,3 +28,19 @@ async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManag
 async def create_event(callback: CallbackQuery, widget, manager: DialogManager):
     selected_date = manager.dialog_data["selected_date"]
     await manager.start(CreateEventDialog.title, data={"selected_date": selected_date})
+
+
+async def on_prev_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
+    data = dialog_manager.dialog_data
+    current_index = data.get("current_index", 0)
+    total_events = data["total_events"]  # Без .get(), так как total_events должен быть
+
+    data["current_index"] = (current_index - 1) % total_events
+
+
+async def on_next_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
+    data = dialog_manager.dialog_data
+    current_index = data.get("current_index", 0)
+    total_events = data["total_events"]
+
+    data["current_index"] = (current_index + 1) % total_events

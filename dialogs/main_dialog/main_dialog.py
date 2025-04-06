@@ -1,59 +1,15 @@
 from aiogram import F
-from aiogram.enums import ContentType
-from aiogram.types import CallbackQuery
-from aiogram_dialog import Dialog, Window, DialogManager
-from aiogram_dialog.api.entities import MediaAttachment, MediaId
+
+from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import Button, Back, Next, Row
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Format, Jinja
-from sqlalchemy import select
 
 from dialogs.main_dialog.custom_calendar import EventCalendar
-from dialogs.main_dialog.getters import dialog_data_getter
-from dialogs.main_dialog.handlers import on_date_selected, create_event
+from dialogs.main_dialog.getters import dialog_data_getter, get_events_data
+from dialogs.main_dialog.handlers import on_date_selected, create_event, on_prev_event, on_next_event
 from dialogs.main_dialog.states import MainDialog
-from models import Event
 
-
-async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
-
-    session = dialog_manager.middleware_data.get("session")
-    current_index = dialog_manager.dialog_data.get("current_index", 0)
-
-    # Получаем событие для модерации
-    event = await session.scalar(
-        select(Event)
-        .where(Event.moderation.is_(True))
-        .limit(1)
-        .offset(current_index)
-    )
-
-    # Если события есть
-    image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(event.image_id))
-
-    return {
-        "title": event.title,
-        "description": event.description,
-        "photo": image,
-        "city": event.city.value,
-        "date": event.date,
-        "username": event.username,
-    }
-
-async def on_prev_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
-    data = dialog_manager.dialog_data
-    current_index = data.get("current_index", 0)
-    total_events = data["total_events"]  # Без .get(), так как total_events должен быть
-
-    data["current_index"] = (current_index - 1) % total_events
-
-
-async def on_next_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
-    data = dialog_manager.dialog_data
-    current_index = data.get("current_index", 0)
-    total_events = data["total_events"]
-
-    data["current_index"] = (current_index + 1) % total_events
 
 dialog_main_dialog = Dialog(
     Window(

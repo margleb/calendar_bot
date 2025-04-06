@@ -34,27 +34,29 @@ class EventCalendarDaysView(CalendarDaysView):
             )
         )
         total_events = await session.scalar(stmt) or 0
-        manager.dialog_data["total_events"] = total_events
 
         current_data = {
             "date": selected_date,
             "data": data,
         }
+
+        # Чередующиеся эмодзи в зависимости от количества событий
+        if 1 <= total_events <= 2:
+            emoji = "🟢"  # зеленый
+        elif 3 <= total_events <= 5:
+            emoji = "🟡"  # желтый
+        elif 6 <= total_events <= 8:
+            emoji = "🟠"  # оранжевый
+        elif 9 <= total_events <= 12:
+            emoji = "🔴"  # красный
+        else:
+            emoji = "💥"  # для очень большого количества
+
         if selected_date == today:
             text = self.today_text
+            if total_events > 0:  # Добавляем эмодзи к текущей дате, если есть мероприятия
+                text += f" {emoji}"
         elif total_events > 0:
-            # Чередующиеся эмодзи в зависимости от количества событий
-            if 1 <= total_events <= 2:
-                emoji = "🟢"  # зеленый
-            elif 3 <= total_events <= 5:
-                emoji = "🟡"  # желтый
-            elif 6 <= total_events <= 8:
-                emoji = "🟠"  # оранжевый
-            elif 9 <= total_events <= 12:
-                emoji = "🔴"  # красный
-            else:
-                emoji = "💥"  # для очень большого количества
-            print(total_events)
             text = self.date_text + f" {emoji}"
         else:
             text = self.date_text
@@ -73,6 +75,7 @@ class EventCalendar(Calendar):
         return {
             CalendarScope.DAYS: EventCalendarDaysView(
                 self._item_callback_data,
+                today_text=Format("{date:%d}"),
                 date_text=Format("{date:%d}"),
             ),
             CalendarScope.MONTHS: CalendarMonthView(self._item_callback_data),
