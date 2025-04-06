@@ -34,6 +34,7 @@ class EventCalendarDaysView(CalendarDaysView):
             )
         )
         total_events = await session.scalar(stmt) or 0
+        manager.dialog_data["total_events"] = total_events
 
         current_data = {
             "date": selected_date,

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import TextInput, MessageInput
-from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar, Button, CalendarConfig, Column
+from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar, Button, CalendarConfig, Column, Cancel
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja, Format
 
@@ -21,6 +21,7 @@ dialog_create_event = Dialog(
             on_error=error_text,
             on_success=Next()
         ),
+        Cancel(Const('Назад')),
         state=CreateEventDialog.title
     ),
     Window(
