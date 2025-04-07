@@ -2,7 +2,7 @@ from itertools import count
 
 from aiogram.enums import ContentType
 from aiogram_dialog import DialogManager
-from aiogram_dialog.api.entities import MediaAttachment, MediaId
+from aiogram_dialog.api.entities import MediaAttachment, MediaId, EventContext
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 
@@ -16,7 +16,7 @@ async def dialog_data_getter(dialog_manager: DialogManager, **kwargs):
         'total_events': dialog_data.get('total_events')
     }
 
-async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
+async def get_events_data(dialog_manager: DialogManager, event_context: EventContext, **kwargs) -> dict:
 
     session = dialog_manager.middleware_data.get("session")
     current_index = dialog_manager.dialog_data.get("current_index", 0)
@@ -41,14 +41,18 @@ async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
     # Если события есть
     image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(event.image_id))
     dialog_manager.dialog_data['event_id'] = event.id
-    dialog_manager.dialog_data['participants'] = event.participants
-    dialog_manager.dialog_data['users_counts'] = users_count
+
+    user_id = event_context.user.id
+    user_joined = any(user.tg_user_id == user_id for user in event.users)
+
+    print(user_id, user_joined)
 
     return {
         "title": event.title,
         "description": event.description,
         'participants': f"{event.participants}/{users_count}",
         'full_event': users_count < event.participants,
+        'is_joined': user_joined,
         "photo": image,
         "city": event.city.value,
         "date": event.date,

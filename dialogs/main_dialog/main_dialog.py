@@ -18,7 +18,6 @@ from models import EventUsers
 async def on_join_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
     session = dialog_manager.middleware_data["session"]
     event_id = dialog_manager.dialog_data["event_id"]
-    dialog_manager.dialog_data['is_joined'] = True
 
     stmt = insert(EventUsers).values(
         event_id=event_id,
@@ -33,7 +32,6 @@ async def on_join_event(callback: CallbackQuery, button: Button, dialog_manager:
 async def on_cancel_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
     session = dialog_manager.middleware_data["session"]
     event_id = dialog_manager.dialog_data["event_id"]
-    dialog_manager.dialog_data['is_joined'] = False
 
     # Удаляем запись
     stmt = delete(EventUsers).where(
@@ -93,13 +91,13 @@ dialog_main_dialog = Dialog(
                 Const("Я иду"),
                 id="join_event",
                 on_click=on_join_event,
-                when=(~F["dialog_data"]["is_joined"]) & F['full_event']
+                when=~F["is_joined"] & F['full_event']
             ),
             Button(
                 Const("Я не пойду"),
                 id="cancel_event",
                 on_click=on_cancel_event,
-                when=(F["dialog_data"]["is_joined"]) & F['full_event']
+                when=F["is_joined"]
             ),
             Button(
                 Const("▶ Вперед"),
