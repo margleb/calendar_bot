@@ -5,33 +5,14 @@ from aiogram.enums import ParseMode
 from aiogram.types import Message
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.input import TextInput, MessageInput
-from aiogram_dialog.widgets.kbd import Next, Back, Select, Calendar, Button, CalendarConfig, Column, Cancel
+from aiogram_dialog.widgets.kbd import Next, Back, Button, Column, Cancel
 from aiogram_dialog.widgets.media import DynamicMedia
-from aiogram_dialog.widgets.text import Const, Jinja, Format
-from pydantic import ValidationError
+from aiogram_dialog.widgets.text import Const, Jinja
 
 from dialogs.create_event.getters import get_event_data
-from dialogs.create_event.handlers import error_text, validate_text, selected_city, handle_photo, \
-    on_public_event
+from dialogs.create_event.handlers import error_text, validate_text, handle_photo, \
+    on_public_event, validate_participants, error_participants
 from dialogs.create_event.states import CreateEventDialog
-
-
-def validate_participants(number: str) -> int:
-    print(number)
-    if not number.isdigit():
-        raise ValueError("Укажите цифру от 1 до 30")
-    number = int(number)
-    if number < 1 or number > 30:
-        raise ValueError("Количество участников должно быть от 1 до 30")
-    return number
-
-async def error_participants(
-        message: Message,
-        dialog_: Any,
-        manager: DialogManager,
-        error_: ValueError
-):
-    await message.reply(str(error_), parse_mode=ParseMode.HTML)
 
 
 dialog_create_event = Dialog(

@@ -5,6 +5,7 @@ from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.kbd import Button, Back, Next, Row, Select
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Format, Jinja
+from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 
 from dialogs.main_dialog.custom_calendar import EventCalendar
@@ -17,14 +18,33 @@ from models import EventUsers
 async def on_join_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
     session = dialog_manager.middleware_data["session"]
     event_id = dialog_manager.dialog_data["event_id"]
+    dialog_manager.dialog_data['is_joined'] = True
 
     stmt = insert(EventUsers).values(
         event_id=event_id,
         tg_user_id=callback.from_user.id,
     )
+
     await session.execute(stmt)
     await session.commit()
     await session.close()
+
+
+async def on_cancel_event(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
+    session = dialog_manager.middleware_data["session"]
+    event_id = dialog_manager.dialog_data["event_id"]
+    dialog_manager.dialog_data['is_joined'] = False
+
+    # Удаляем запись
+    stmt = delete(EventUsers).where(
+        EventUsers.event_id == event_id,
+        EventUsers.tg_user_id == callback.from_user.id
+    )
+
+    await session.execute(stmt)
+    await session.commit()
+    await session.close()
+
 
 dialog_main_dialog = Dialog(
     Window(
@@ -63,12 +83,30 @@ dialog_main_dialog = Dialog(
             "<b>Пишите:</b> @{{username}}\n"
         ),
         Row(
-            Button(Const("◀ Назад"), id="prev_event", on_click=on_prev_event,
-                   when=F["dialog_data"]["total_events"] > 1),
-            Button(Const("Я иду"), id="join_event", on_click=on_join_event),
-            # Button(Const("Я не пойду"), id="join_event"),
-            Button(Const("▶ Вперед"), id="next_event", on_click=on_next_event,
-                   when=F["dialog_data"]["total_events"] > 1),
+            Button(
+                Const("◀ Назад"),
+                id="prev_event",
+                on_click=on_prev_event,
+                when=F["dialog_data"]["total_events"] > 1
+            ),
+            Button(
+                Const("Я иду"),
+                id="join_event",
+                on_click=on_join_event,
+                when=(~F["dialog_data"]["is_joined"]) & (F["dialog_data"]["participants"] > F["dialog_data"]["users_counts"])
+            ),
+            Button(
+                Const("Я не пойду"),
+                id="cancel_event",
+                on_click=on_cancel_event,
+                when=(F["dialog_data"]["is_joined"]) & (F["dialog_data"]["participants"] > F["dialog_data"]["users_counts"])
+            ),
+            Button(
+                Const("▶ Вперед"),
+                id="next_event",
+                on_click=on_next_event,
+                when=F["dialog_data"]["total_events"] > 1
+            ),
         ),
         Back(Const('Назад')),
         parse_mode="HTML",

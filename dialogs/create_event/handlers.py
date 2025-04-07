@@ -74,3 +74,20 @@ async def on_public_event(callback: CallbackQuery, button: Button, dialog_manage
     except SQLAlchemyError as e:
         await session.rollback()
         await callback.answer(f"❌ Ошибка при сохранении: {str(e)}", show_alert=True)
+
+def validate_participants(number: str) -> int:
+    print(number)
+    if not number.isdigit():
+        raise ValueError("Укажите цифру от 1 до 30")
+    number = int(number)
+    if number < 1 or number > 30:
+        raise ValueError("Количество участников должно быть от 1 до 30")
+    return number
+
+async def error_participants(
+        message: Message,
+        dialog_: Any,
+        manager: DialogManager,
+        error_: ValueError
+):
+    await message.reply(str(error_), parse_mode=ParseMode.HTML)

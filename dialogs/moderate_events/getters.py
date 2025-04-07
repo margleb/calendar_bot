@@ -2,6 +2,7 @@ from aiogram.enums import ContentType
 from aiogram_dialog import DialogManager
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 
 from models import Event
 
@@ -14,6 +15,7 @@ async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
     event = await session.scalar(
         select(Event)
         .where(Event.moderation.is_(False))
+        .options(selectinload(Event.users))
         .limit(1)
         .offset(current_index)
     )
@@ -32,6 +34,9 @@ async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
             "message": "Нет событий для модерации"
         }
 
+    # Получаем количество пользователей
+    users_count = len(event.users) if event.users else 0
+
     # Если события есть
     dialog_manager.dialog_data['total_events'] = total_events
     dialog_manager.dialog_data['event_id'] = event.id
@@ -41,6 +46,7 @@ async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
     return {
         "title": event.title,
         "description": event.description,
+        "participants": f"{event.participants}/{users_count}",
         "photo": image,
         "city": event.city.value,
         "date": event.date,

@@ -41,6 +41,8 @@ async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
     # Если события есть
     image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(event.image_id))
     dialog_manager.dialog_data['event_id'] = event.id
+    dialog_manager.dialog_data['participants'] = event.participants
+    dialog_manager.dialog_data['users_counts'] = users_count
 
     return {
         "title": event.title,
