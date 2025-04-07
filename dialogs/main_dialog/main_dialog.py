@@ -93,13 +93,13 @@ dialog_main_dialog = Dialog(
                 Const("Я иду"),
                 id="join_event",
                 on_click=on_join_event,
-                when=(~F["dialog_data"]["is_joined"]) & (F["dialog_data"]["participants"] > F["dialog_data"]["users_counts"])
+                when=(~F["dialog_data"]["is_joined"]) & F['full_event']
             ),
             Button(
                 Const("Я не пойду"),
                 id="cancel_event",
                 on_click=on_cancel_event,
-                when=(F["dialog_data"]["is_joined"]) & (F["dialog_data"]["participants"] > F["dialog_data"]["users_counts"])
+                when=(F["dialog_data"]["is_joined"]) & F['full_event']
             ),
             Button(
                 Const("▶ Вперед"),

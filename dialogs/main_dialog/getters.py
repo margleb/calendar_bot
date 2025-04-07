@@ -48,6 +48,7 @@ async def get_events_data(dialog_manager: DialogManager, **kwargs) -> dict:
         "title": event.title,
         "description": event.description,
         'participants': f"{event.participants}/{users_count}",
+        'full_event': users_count < event.participants,
         "photo": image,
         "city": event.city.value,
         "date": event.date,
