@@ -56,6 +56,7 @@ async def on_public_event(callback: CallbackQuery, button: Button, dialog_manage
             image_id=event_data.get("photo"),
             title=dialog_manager.find('title').get_value(),
             description=dialog_manager.find('description').get_value(),
+            participants=dialog_manager.find('participants').get_value(),
             city=dialog_manager.start_data["selected_city"],
             date=dialog_manager.start_data["selected_date"],
             username=callback.from_user.username,

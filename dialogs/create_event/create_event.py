@@ -84,6 +84,7 @@ dialog_create_event = Dialog(
             "<b>Что</b> {{title}}\n"
             "<b>Где:</b> {{city}}\n"
             "<b>Когда:</b> {{date}}\n"
+            "<b>Участников:</b> {{participants}}\n"
             "<b>Пишите:</b> @{{username}}\n"
         ),
         Column(

@@ -12,6 +12,7 @@ async def get_event_data(dialog_manager: DialogManager, event_context: EventCont
     return {
         'title': dialog_manager.find('title').get_value(),
         'description': dialog_manager.find('description').get_value(),
+        'participants': dialog_manager.find('participants').get_value(),
         'photo': image,
         'city': city,
         'date': date_event,
