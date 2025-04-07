@@ -91,13 +91,13 @@ dialog_main_dialog = Dialog(
                 Const("Я иду"),
                 id="join_event",
                 on_click=on_join_event,
-                when=~F["is_joined"] & F['full_event']
+                when=~F["is_joined"] & F['full_event'] & ~F["event_owner"]
             ),
             Button(
                 Const("Я не пойду"),
                 id="cancel_event",
                 on_click=on_cancel_event,
-                when=F["is_joined"]
+                when=F["is_joined"] & ~F["event_owner"]
             ),
             Button(
                 Const("▶ Вперед"),

@@ -44,6 +44,7 @@ async def get_events_data(dialog_manager: DialogManager, event_context: EventCon
 
     user_id = event_context.user.id
     user_joined = any(user.tg_user_id == user_id for user in event.users)
+    event_owner = event.tg_user_id == user_id
 
     print(user_id, user_joined)
 
@@ -53,6 +54,7 @@ async def get_events_data(dialog_manager: DialogManager, event_context: EventCon
         'participants': f"{event.participants}/{users_count}",
         'full_event': users_count < event.participants,
         'is_joined': user_joined,
+        'event_owner': event_owner,
         "photo": image,
         "city": event.city.value,
         "date": event.date,
