@@ -18,4 +18,4 @@ class EventUsers(Base):
         nullable=False,
         server_default=func.now(),
     )
-    event: Mapped[list["Event"]] = relationship(back_populates="event_users")
+    event: Mapped[list["Event"]] = relationship(back_populates="users")
