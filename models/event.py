@@ -23,4 +23,4 @@ class Event(Base):
     date: Mapped[Date] = mapped_column(Date)
     username: Mapped[str] = mapped_column(String)
     moderation: Mapped[bool] = mapped_column(Boolean, server_default='false')
-    users: Mapped[list["EventUsers"]] = relationship(back_populates="event")
+    users: Mapped[list["EventUsers"]] = relationship(back_populates="event", cascade="delete")

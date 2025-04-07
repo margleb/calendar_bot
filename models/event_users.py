@@ -11,7 +11,7 @@ class EventUsers(Base):
 
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    event_id:Mapped[int] = mapped_column(BigInteger, ForeignKey("events.id"))
+    event_id:Mapped[int] = mapped_column(BigInteger, ForeignKey("events.id", ondelete="CASCADE"))
     tg_user_id: Mapped[int] = mapped_column(BigInteger)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
