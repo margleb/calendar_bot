@@ -1,11 +1,10 @@
 import enum
-from dataclasses import dataclass
-from datetime import datetime
 
 from sqlalchemy import String, Text, Enum, DateTime, BigInteger, Boolean, Date
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.base import Base
+
 
 class CityEnum(enum.Enum):
     moscow = 'Москва'
@@ -23,3 +22,4 @@ class Event(Base):
     date: Mapped[Date] = mapped_column(Date)
     username: Mapped[str] = mapped_column(String)
     moderation: Mapped[bool] = mapped_column(Boolean, server_default='false')
+    users: Mapped[list["EventUsers"]] = relationship(back_populates="events")

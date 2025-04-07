@@ -49,6 +49,8 @@ dialog_main_dialog = Dialog(
         Row(
             Button(Const("◀ Назад"), id="prev_event", on_click=on_prev_event,
                    when=F["dialog_data"]["total_events"] > 1),
+            # Button(Const("Я иду"), id="join_event"),
+            # Button(Const("Я не пойду"), id="join_event"),
             Button(Const("▶ Вперед"), id="next_event", on_click=on_next_event,
                    when=F["dialog_data"]["total_events"] > 1),
         ),

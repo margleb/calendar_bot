@@ -12,6 +12,7 @@ from dialogs.my_events.my_events import dialog_my_events_dialog
 from handlers import get_routes
 from handlers.main_menu import set_main_menu
 from middlewares.session import DbSessionMiddleware
+from models import Base
 
 
 async def main():
@@ -35,9 +36,9 @@ async def main():
     )
 
     # созданием таблицы
-    # async with engine.begin() as conn:
-    #     await conn.run_sync(Base.metadata.drop_all)
-    #     await conn.run_sync(Base.metadata.create_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
     # Создаем сессию
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
