@@ -2,6 +2,7 @@ from aiogram.enums import ContentType
 from aiogram_dialog import DialogManager
 from aiogram_dialog.api.entities import MediaAttachment, MediaId, EventContext
 from sqlalchemy import func, select, and_
+from sqlalchemy.orm import selectinload
 
 from models import Event
 
@@ -13,6 +14,7 @@ async def get_events_data(dialog_manager: DialogManager, event_context: EventCon
     event = await session.scalar(
         select(Event)
         .where(Event.tg_user_id == event_context.user.id)
+        .options(selectinload(Event.users))
         .limit(1)
         .offset(current_index)
     )
@@ -35,11 +37,15 @@ async def get_events_data(dialog_manager: DialogManager, event_context: EventCon
     dialog_manager.dialog_data['total_events'] = total_events
     dialog_manager.dialog_data['event_id'] = event.id
 
+    # Получаем количество пользователей
+    users_count = len(event.users) if event.users else 0
+
     image = MediaAttachment(ContentType.PHOTO, file_id=MediaId(event.image_id))
 
     return {
         "title": event.title,
         "description": event.description,
+        'participants': f"{event.participants}/{users_count}",
         "photo": image,
         "city": event.city.value,
         "date": event.date,

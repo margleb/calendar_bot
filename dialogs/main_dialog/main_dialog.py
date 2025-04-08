@@ -22,6 +22,7 @@ async def on_join_event(callback: CallbackQuery, button: Button, dialog_manager:
     stmt = insert(EventUsers).values(
         event_id=event_id,
         tg_user_id=callback.from_user.id,
+        tg_username=callback.from_user.username,
     )
 
     await session.execute(stmt)
