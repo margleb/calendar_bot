@@ -19,4 +19,12 @@ class DbSessionMiddleware(BaseMiddleware):
     ) -> Any:
         async with self.session_pool() as session:
             data['session'] = session
-        return await handler(event, data)
+        try:
+            return await handler(event, data)
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            # The garbage collector is trying to clean up non-checked-in connection...
+            # Please ensure that SQLAlchemy pooled connections are returned to the pool explicitly...
+            await session.close() # предотвращение ошибки
