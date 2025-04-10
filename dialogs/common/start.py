@@ -26,7 +26,7 @@ dialog = Dialog(
             Start(
                 Const(DC_START['buttons']['calendar']),
                 id='calendar',
-                state=DCalendar.calendar
+                state=DCalendar.city
             ),
         ),
         parse_mode=ParseMode.HTML,
