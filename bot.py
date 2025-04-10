@@ -1,18 +1,12 @@
 import asyncio
 
-from aiogram import Dispatcher, Bot
+from aiogram import Bot, Dispatcher
 from aiogram_dialog import setup_dialogs
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from config.config import get_config, BotConfig, DbConfig
-from dialogs.create_event.create_event import dialog_create_event
-from dialogs.main_dialog.main_dialog import dialog_main_dialog
-from dialogs.moderate_events.moderate_events import dialog_moderate_dialog
-from dialogs.my_events.my_events import dialog_my_events_dialog
+from config.config import get_config, BotConfig
+from dialogs import get_dialogs
 from handlers import get_routes
-from handlers.main_menu import set_main_menu
-from middlewares.session import DbSessionMiddleware
-from models import Base
+
 
 
 async def main():
@@ -23,17 +17,17 @@ async def main():
 
     # маршруты
     dp = Dispatcher(admin_id=bot_config.admin_id)
-    dp.include_routers(*get_routes(), dialog_main_dialog, dialog_create_event, dialog_moderate_dialog, dialog_my_events_dialog)
+    dp.include_routers(*get_routes(), *get_dialogs())
 
     # запускаем dialog-manager
     setup_dialogs(dp)
 
     # создаем engine
-    db_config = get_config(DbConfig, 'db')
-    engine = create_async_engine(
-        url=str(db_config.dsn),  # здесь требуется приведение к строке
-        echo=db_config.is_echo
-    )
+    # db_config = get_config(DbConfig, 'db')
+    # engine = create_async_engine(
+    #     url=str(db_config.dsn),  # здесь требуется приведение к строке
+    #     echo=db_config.is_echo
+    # )
 
     # созданием таблицы
     # async with engine.begin() as conn:
@@ -41,12 +35,12 @@ async def main():
     #     await conn.run_sync(Base.metadata.create_all)
 
     # Создаем сессию
-    session_maker = async_sessionmaker(engine, expire_on_commit=False)
-    dp.update.outer_middleware(DbSessionMiddleware(session_maker))
+    # session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    # dp.update.outer_middleware(DbSessionMiddleware(session_maker))
 
     # Регистрируем асинхронную функцию в диспетчере,
     # которая будет выполняться на старте бота,
-    dp.startup.register(set_main_menu)
+    # dp.startup.register(set_main_menu)
 
     await dp.start_polling(bot)
 
