@@ -1,12 +1,20 @@
 import asyncio
+import datetime
 
 from aiogram import Bot, Dispatcher
 from aiogram_dialog import setup_dialogs
+from sqlalchemy import func
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
+from sqlalchemy.orm import Session
 
-from config.config import get_config, BotConfig
+from config.config import get_config, BotConfig, DbConfig
+from db.base import Base
+from db.models import Event
+from db.models.Event import CityEnum
 from dialogs import get_dialogs
 from handlers import get_routes
-
+from middlewares.session import DbSessionMiddleware
+from middlewares.track_all_users import TrackAllUsersMiddleware
 
 
 async def main():
@@ -23,20 +31,22 @@ async def main():
     setup_dialogs(dp)
 
     # создаем engine
-    # db_config = get_config(DbConfig, 'db')
-    # engine = create_async_engine(
-    #     url=str(db_config.dsn),  # здесь требуется приведение к строке
-    #     echo=db_config.is_echo
-    # )
+    db_config = get_config(DbConfig, 'db')
+    engine = create_async_engine(
+        url=str(db_config.dsn),  # здесь требуется приведение к строке
+        echo=db_config.is_echo
+    )
 
     # созданием таблицы
-    # async with engine.begin() as conn:
-    #     await conn.run_sync(Base.metadata.drop_all)
-    #     await conn.run_sync(Base.metadata.create_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
     # Создаем сессию
     # session_maker = async_sessionmaker(engine, expire_on_commit=False)
     # dp.update.outer_middleware(DbSessionMiddleware(session_maker))
+    # dp.message.outer_middleware(TrackAllUsersMiddleware())
+
 
     # Регистрируем асинхронную функцию в диспетчере,
     # которая будет выполняться на старте бота,
