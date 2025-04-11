@@ -3,8 +3,12 @@ from typing import Callable, Awaitable, Dict, Any, cast
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message
 from cachetools import TTLCache
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from db.models import Event
+from db.models.User import User
 from db.requests import upsert_user
 
 
@@ -36,5 +40,17 @@ class TrackAllUsersMiddleware(BaseMiddleware):
                 last_name=event.from_user.last_name,
                 username=event.from_user.username,
             )
+            stmt = (
+                select(User)
+                    .where(User.telegram_id == event.from_user.id)
+                    .options(selectinload(User.events)) # Явная загрузка связанных событий
+            )
+            user = await session.scalar(stmt)
+            event = Event(
+                title='Здарова'
+            )
+            user.events.append(event)
+            await session.commit()
+
             self.cache[user_id] = None
         return await handler(event, data)
