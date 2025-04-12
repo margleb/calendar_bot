@@ -5,7 +5,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.base import Base
 from db.mixins import TimestampMixin
-from db.models.event_user import association_table
 
 
 class User(TimestampMixin, Base):
@@ -15,7 +14,5 @@ class User(TimestampMixin, Base):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str | None] = mapped_column(String, nullable=True)
     username: Mapped[str] = mapped_column(String)
-    events: Mapped[List["Event"]] = relationship(
-        secondary=association_table, back_populates="users"
-    )
+    events: Mapped[List["Association"]] = relationship(back_populates="user")
     # created_at добавляется из миксина

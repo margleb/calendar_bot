@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from db.models import Event
+from db.models.Association import Association
 from db.models.User import User
 from db.requests import upsert_user
 
@@ -40,17 +41,24 @@ class TrackAllUsersMiddleware(BaseMiddleware):
                 last_name=event.from_user.last_name,
                 username=event.from_user.username,
             )
-            stmt = (
+            # ДОБАВИТЬ
+            user = await session.scalar(
                 select(User)
-                    .where(User.telegram_id == event.from_user.id)
-                    .options(selectinload(User.events)) # Явная загрузка связанных событий
+                .options(selectinload(User.events))  # Предварительная загрузка events
+                .where(User.telegram_id == event.from_user.id)
             )
-            user = await session.scalar(stmt)
-            event = Event(
-                title='Здарова'
-            )
-            user.events.append(event)
+            assoc = Association(status='join')
+            assoc.event = Event(title='Новое событие')
+            user.events.append(assoc)
+
+            # Добавляем объект в сессию
+            session.add(user)
             await session.commit()
+
+            # ПРОЧИТАТЬ
+            for assoc in user.events:
+                print(assoc.status)
+                print(assoc.event.title)
 
             self.cache[user_id] = None
         return await handler(event, data)
