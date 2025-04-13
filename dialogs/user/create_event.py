@@ -5,7 +5,7 @@ from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.api.entities import EventContext
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Cancel, Back, Next, Button
-from aiogram_dialog.widgets.text import Const, Jinja
+from aiogram_dialog.widgets.text import Const, Jinja, Format
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -17,7 +17,8 @@ from lexicon.lexicon import D_BUTTONS, DU_CREATE_EVENT
 class CreateEvent(StatesGroup):
     title = State() # название
     description = State() # описание
-    result = State() # событие
+    event = State() # событие
+    moderation = State() # модерация
 
 async def create_event(callback: CallbackQuery, button: Button, manager: DialogManager):
     session = manager.middleware_data.get('session')  # получаем сессию
@@ -36,6 +37,7 @@ async def create_event(callback: CallbackQuery, button: Button, manager: DialogM
     user.events.append(assoc) # добавляем промежуточную запись
     session.add(user)
     await session.commit()
+    await manager.next()
 
 
 async def get_event_data(dialog_manager: DialogManager, event_from_user: User, **kwargs):
@@ -79,11 +81,14 @@ dialog = Dialog(
            id='moderate_event'
        ),
        Back(Const(D_BUTTONS['back'])),
-       parse_mode = ParseMode.HTML,
-       getter=get_event_data,
-       state=CreateEvent.result
+       parse_mode=ParseMode.HTML,
+       state=CreateEvent.event
    ),
-   # Window(
-   #
-   # )
+   Window(
+       Format(DU_CREATE_EVENT['moderation']),
+       Cancel(Const(DU_CREATE_EVENT['buttons']['apply_moderation'])),
+       parse_mode=ParseMode.HTML,
+       state=CreateEvent.moderation
+   ),
+   getter=get_event_data
 )
