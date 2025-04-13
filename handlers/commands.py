@@ -10,3 +10,4 @@ router = Router(name='user commands')
 @router.message(CommandStart())
 async def cmd_start(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(DCommon.start, mode=StartMode.RESET_STACK)
+

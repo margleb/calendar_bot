@@ -20,19 +20,19 @@ class DCalendar(StatesGroup):
 
 
 async def on_city_selected(callback: CallbackQuery, widget: Any, manager: DialogManager, selected_city: str):
-    manager.dialog_data['selected_city'] = selected_city
+    manager.dialog_data['city'] = selected_city
     await manager.next()
 
 
 async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
-    manager.dialog_data['selected_date'] = selected_date
+    manager.dialog_data['date'] = selected_date
     await manager.next()
 
 
 async def get_dialog_data(dialog_manager: DialogManager, **kwargs) -> dict:
     return {
-        'selected_city': dialog_manager.dialog_data.get('selected_city'),
-        'selected_date': dialog_manager.dialog_data.get('selected_date')
+        'city': dialog_manager.dialog_data.get('city'),
+        'date': dialog_manager.dialog_data.get('date')
     }
 
 
@@ -70,6 +70,7 @@ dialog = Dialog(
             Start(
                 Const(DU_CALENDAR['buttons']['create_event']),
                 id='create_event',
+                data={'key': 'value'}, # передаем данные в create_event
                 state=CreateEvent.title
             ),
             Back(Const(D_BUTTONS['back'])),

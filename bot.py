@@ -13,6 +13,7 @@ from db.models import Event
 from db.models.Event import CityEnum
 from dialogs import get_dialogs
 from handlers import get_routes
+from handlers.no_command import no_cmd
 from middlewares.session import DbSessionMiddleware
 from middlewares.track_all_users import TrackAllUsersMiddleware
 
@@ -25,7 +26,7 @@ async def main():
 
     # маршруты
     dp = Dispatcher(admin_id=bot_config.admin_id)
-    dp.include_routers(*get_routes(), *get_dialogs())
+    dp.include_routers(*get_routes(), *get_dialogs(), no_cmd)
 
     # запускаем dialog-manager
     setup_dialogs(dp)
