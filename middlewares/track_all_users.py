@@ -4,6 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message
 from cachetools import TTLCache
 from sqlalchemy import select
+from sqlalchemy.event import Events
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -41,24 +42,5 @@ class TrackAllUsersMiddleware(BaseMiddleware):
                 last_name=event.from_user.last_name,
                 username=event.from_user.username,
             )
-            # ДОБАВИТЬ
-            user = await session.scalar(
-                select(User)
-                .options(selectinload(User.events))  # Предварительная загрузка events
-                .where(User.telegram_id == event.from_user.id)
-            )
-            assoc = Association(status='join')
-            assoc.event = Event(title='Новое событие')
-            user.events.append(assoc)
-
-            # Добавляем объект в сессию
-            session.add(user)
-            await session.commit()
-
-            # ПРОЧИТАТЬ
-            for assoc in user.events:
-                print(assoc.status)
-                print(assoc.event.title)
-
             self.cache[user_id] = None
         return await handler(event, data)
