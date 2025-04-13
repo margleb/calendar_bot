@@ -18,6 +18,8 @@ async def get_event_data(dialog_manager: DialogManager, **kwargs):
     return {
         'title': dialog_manager.find('title').get_value(),
         'description': dialog_manager.find('description').get_value(),
+        'city': dialog_manager.start_data['city'],
+        'date': dialog_manager.start_data['date'],
     }
 
 
@@ -48,6 +50,8 @@ dialog = Dialog(
        Jinja("""
        <b>{{title}}</b>
        <b>{{description}}</b>
+       <b>{{city}}</b>
+       <b>{{date}}</b>
        """),
        Back(Const(D_BUTTONS['back'])),
        parse_mode = ParseMode.HTML,

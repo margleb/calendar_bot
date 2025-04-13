@@ -1,10 +1,11 @@
 from typing import Any
 
+from aiogram import F
 from aiogram.enums import ParseMode
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
-from aiogram_dialog.widgets.kbd import Select, Cancel, Next, Start, Back, Column
+from aiogram_dialog.widgets.kbd import Select, Cancel, Next, Start, Back, Column, Button
 from aiogram_dialog.widgets.text import Const, Format
 
 from dialogs.user.create_event import CreateEvent
@@ -29,11 +30,16 @@ async def on_date_selected(callback: CallbackQuery, widget, manager: DialogManag
     await manager.next()
 
 
+async def on_start_create_event(callback: CallbackQuery, button: Button, manager: DialogManager):
+    await manager.start(CreateEvent.title, data=manager.dialog_data)
+
+
 async def get_dialog_data(dialog_manager: DialogManager, **kwargs) -> dict:
     return {
         'city': dialog_manager.dialog_data.get('city'),
         'date': dialog_manager.dialog_data.get('date')
     }
+
 
 
 dialog = Dialog(
@@ -67,11 +73,10 @@ dialog = Dialog(
                 Const(DU_CALENDAR['buttons']['show_events']),
                 id='show_events'
             ),
-            Start(
+            Button(
                 Const(DU_CALENDAR['buttons']['create_event']),
                 id='create_event',
-                data={'key': 'value'}, # передаем данные в create_event
-                state=CreateEvent.title
+                on_click=on_start_create_event,
             ),
             Back(Const(D_BUTTONS['back'])),
         ),
