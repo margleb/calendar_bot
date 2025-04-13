@@ -26,6 +26,7 @@ DU_CALENDAR: dict[str, str | dict] = {
 DU_CREATE_EVENT: dict[str, str | dict] = {
     'title': 'Укажи название мероприятия, например: <b>Прогулка в парке</b> или <b>Сходить на шашлыки</b>.',
     'description': 'Добавьте краткое описание мероприятию.',
+    'result': "{{description}}\n\n────────────────────\n\n🎯 <b>Событие: </b>{{title}}\n\n🏙 <b>Локация: </b>{{city}}\n\n📆 <b>Дата проведения: </b>{{date}}\n\n💬 <b>Для связи: </b>@{{username}}",
     'buttons': {
         'create_event': "Создать мероприятие"
     }

@@ -2,15 +2,15 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
+from aiogram_dialog.api.entities import EventContext
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Cancel, Back, Next, Button
 from aiogram_dialog.widgets.text import Const, Jinja
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from db.models import User, Event
 from db.models.Association import Association
-from db.models.Event import CityEnum
 from lexicon.lexicon import D_BUTTONS, DU_CREATE_EVENT
 
 
@@ -21,8 +21,6 @@ class CreateEvent(StatesGroup):
 
 async def create_event(callback: CallbackQuery, button: Button, manager: DialogManager):
     session = manager.middleware_data.get('session')  # получаем сессию
-    data = manager.dialog_data
-    print(session)
     user = await session.scalar(
         select(User)
         .options(selectinload(User.events)) # lazy load
@@ -30,22 +28,23 @@ async def create_event(callback: CallbackQuery, button: Button, manager: DialogM
     )
     assoc = Association(status='create')
     assoc.event = Event(
-        title='title',
-        description='description',
-        city=CityEnum.moscow.value,
-        date_event=func.now()
+        title=manager.find('title').get_value(),
+        description=manager.find('description').get_value(),
+        city=manager.start_data['city'],
+        date_event=manager.start_data['date'],
     )
     user.events.append(assoc) # добавляем промежуточную запись
     session.add(user)
     await session.commit()
 
 
-async def get_event_data(dialog_manager: DialogManager, **kwargs):
+async def get_event_data(dialog_manager: DialogManager, event_from_user: User, **kwargs):
     return {
         'title': dialog_manager.find('title').get_value(),
         'description': dialog_manager.find('description').get_value(),
         'city': dialog_manager.start_data['city'],
         'date': dialog_manager.start_data['date'],
+        'username': event_from_user.username,
     }
 
 
@@ -73,12 +72,7 @@ dialog = Dialog(
        state=CreateEvent.description
    ),
    Window(
-       Jinja("""
-       <b>{{title}}</b>
-       <b>{{description}}</b>
-       <b>{{city}}</b>
-       <b>{{date}}</b>
-       """),
+       Jinja(DU_CREATE_EVENT['result']),
        Button(
            Const(DU_CREATE_EVENT['buttons']['create_event']),
            on_click=create_event,
@@ -88,5 +82,8 @@ dialog = Dialog(
        parse_mode = ParseMode.HTML,
        getter=get_event_data,
        state=CreateEvent.result
-   )
+   ),
+   # Window(
+   #
+   # )
 )
