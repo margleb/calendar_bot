@@ -2,6 +2,7 @@ import asyncio
 import datetime
 
 from aiogram import Bot, Dispatcher
+from aiogram.types import BotCommand
 from aiogram_dialog import setup_dialogs
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
@@ -13,6 +14,7 @@ from db.models import Event
 from db.models.Event import CityEnum
 from dialogs import get_dialogs
 from handlers import get_routes
+from handlers.mm_commands import set_main_menu
 from handlers.no_command import no_cmd
 from middlewares.session import DbSessionMiddleware
 from middlewares.track_all_users import TrackAllUsersMiddleware
@@ -50,7 +52,7 @@ async def main():
 
     # Регистрируем асинхронную функцию в диспетчере,
     # которая будет выполняться на старте бота,
-    # dp.startup.register(set_main_menu)
+    dp.startup.register(set_main_menu)
 
     await dp.start_polling(bot)
 
