@@ -40,13 +40,13 @@ async def create_event(callback: CallbackQuery, button: Button, manager: DialogM
     await manager.next()
 
 
-async def get_event_data(dialog_manager: DialogManager, event_from_user: User, **kwargs):
+async def get_event_data(dialog_manager: DialogManager, **kwargs):
     return {
         'title': dialog_manager.find('title').get_value(),
         'description': dialog_manager.find('description').get_value(),
         'city': dialog_manager.start_data['city'],
         'date': dialog_manager.start_data['date'],
-        'username': event_from_user.username,
+        'username': dialog_manager.event.from_user.username,
     }
 
 
