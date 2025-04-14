@@ -39,9 +39,19 @@ async def on_start_create_event(callback: CallbackQuery, button: Button, manager
 
 
 async def get_dialog_data(dialog_manager: DialogManager, **kwargs) -> dict:
+
+    session = dialog_manager.middleware_data.get('session')
+
+    # Получаем здесь кол-во мероприятий для того, чтобы отработал when в row для кнопок
+    date_event = dialog_manager.dialog_data.get('date')
+    stmt = select(func.count(Event.id)).where(Event.date_event == date_event)
+    total_events = await session.scalar(stmt)
+    dialog_manager.dialog_data['total_events'] = total_events
+
     return {
         'city': dialog_manager.dialog_data.get('city'),
-        'date': dialog_manager.dialog_data.get('date')
+        'date': date_event,
+        # 'total_events': total_events
     }
 
 
@@ -49,11 +59,6 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
     session = dialog_manager.middleware_data.get('session')
     date_event = dialog_manager.dialog_data.get('date')
     offset = dialog_manager.dialog_data.get('offset')
-
-    # Получаем здесь кол-во мероприятий для того, чтобы отработал when в row для кнопок
-    stmt = select(func.count(Event.id)).where(Event.date_event == date_event)
-    total_events = await session.scalar(stmt)
-    dialog_manager.dialog_data['total_events'] = total_events
 
     stmt = (
         select(Event).
@@ -152,7 +157,8 @@ dialog = Dialog(
         Column(
             Next(
                 Const(DU_CALENDAR['buttons']['show_events']),
-                id='show_events'
+                id='show_events',
+                when=F['dialog_data']['total_events'] > 0
             ),
             Button(
                 Const(DU_CALENDAR['buttons']['create_event']),
@@ -182,8 +188,8 @@ dialog = Dialog(
             when=~F['is_owner']
         ),
         Row(
-            Button(Const(DU_CALENDAR['buttons']['next_event']), id='prev_event', on_click=switch_event),
-            Button(Const(DU_CALENDAR['buttons']['prev_event']), id='next_event', on_click=switch_event),
+            Button(Const(DU_CALENDAR['buttons']['prev_event']), id='prev_event', on_click=switch_event),
+            Button(Const(DU_CALENDAR['buttons']['next_event']), id='next_event', on_click=switch_event),
             when=F['dialog_data']['total_events'] > 1 # показывается если событий больше одного
         ),
         Back(Const(D_BUTTONS['back'])),
