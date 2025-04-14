@@ -42,16 +42,28 @@ async def get_dialog_data(dialog_manager: DialogManager, **kwargs) -> dict:
 
     session = dialog_manager.middleware_data.get('session')
 
-    # Получаем здесь кол-во мероприятий для того, чтобы отработал when в row для кнопок
+    # Получаем здесь кол-во мероприятий за текущий день
     date_event = dialog_manager.dialog_data.get('date')
     stmt = select(func.count(Event.id)).where(Event.date_event == date_event)
-    total_events = await session.scalar(stmt)
-    dialog_manager.dialog_data['total_events'] = total_events
+    total_today_events = await session.scalar(stmt)
+    dialog_manager.dialog_data['total_today_events'] = total_today_events
+
+    # Получаем кол-во мероприятий созданных пользователем
+    stmt = select(
+        func.count()
+    ).select_from(Association).join(Association.event).where(
+        and_(
+            Association.user_id == dialog_manager.event.from_user.id,
+            Event.date_event >= func.current_date()
+        )
+    )
+    total_user_events = await session.scalar(stmt)
+    # dialog_manager.dialog_data['total_user_events'] = total_user_events
 
     return {
         'city': dialog_manager.dialog_data.get('city'),
+        'full_events': total_user_events > 5, # максимальное кол-во мероприятий за раз
         'date': date_event,
-        # 'total_events': total_events
     }
 
 
@@ -89,14 +101,14 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
 
 async def switch_event(callback_query: CallbackQuery, button: Button, manager: DialogManager):
 
-    total_events = manager.dialog_data.get('total_events')
+    total_today_events = manager.dialog_data.get('total_today_events')
     offset = manager.dialog_data.get('offset', 0)
 
     # Увеличиваем или уменьшаем offset в зависимости от кнопки
     if button.widget_id == "next_event":
-        offset = (offset + 1) % total_events
+        offset = (offset + 1) % total_today_events
     elif button.widget_id == "prev_event":
-        offset = (offset - 1 + total_events) % total_events
+        offset = (offset - 1 + total_today_events) % total_today_events
 
     manager.dialog_data['offset'] = offset
 
@@ -153,17 +165,18 @@ dialog = Dialog(
         state=DCalendar.calendar
     ),
     Window(
-        Format(DU_CALENDAR['choice']),
+        Jinja(DU_CALENDAR['choice']),
         Column(
             Next(
                 Const(DU_CALENDAR['buttons']['show_events']),
                 id='show_events',
-                when=F['dialog_data']['total_events'] > 0
+                when=F['dialog_data']['total_today_events'] > 0
             ),
             Button(
                 Const(DU_CALENDAR['buttons']['create_event']),
                 id='create_event',
                 on_click=on_start_create_event,
+                when=~F['full_events']
             ),
             Back(Const(D_BUTTONS['back'])),
         ),
@@ -190,7 +203,7 @@ dialog = Dialog(
         Row(
             Button(Const(DU_CALENDAR['buttons']['prev_event']), id='prev_event', on_click=switch_event),
             Button(Const(DU_CALENDAR['buttons']['next_event']), id='next_event', on_click=switch_event),
-            when=F['dialog_data']['total_events'] > 1 # показывается если событий больше одного
+            when=F['dialog_data']['total_today_events'] > 1 # показывается если событий больше одного
         ),
         Back(Const(D_BUTTONS['back'])),
         getter=get_current_event,
