@@ -49,6 +49,12 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
     session = dialog_manager.middleware_data.get('session')
     date_event = dialog_manager.dialog_data.get('date')
     offset = dialog_manager.dialog_data.get('offset')
+
+    # Получаем здесь кол-во мероприятий для того, чтобы отработал when в row для кнопок
+    stmt = select(func.count(Event.id)).where(Event.date_event == date_event)
+    total_events = await session.scalar(stmt)
+    dialog_manager.dialog_data['total_events'] = total_events
+
     stmt = (
         select(Event).
         join(Association).
@@ -78,13 +84,6 @@ async def switch_event(callback_query: CallbackQuery, button: Button, manager: D
 
     total_events = manager.dialog_data.get('total_events')
     offset = manager.dialog_data.get('offset', 0)
-
-    if not total_events:
-        session = manager.middleware_data.get('session')
-        date_event = manager.dialog_data.get('date')
-        stmt = select(func.count(Event.id)).where(Event.date_event == date_event)
-        total_events = await session.scalar(stmt)
-        manager.dialog_data['total_events'] = total_events
 
     # Увеличиваем или уменьшаем offset в зависимости от кнопки
     if button.widget_id == "next_event":
