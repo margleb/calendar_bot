@@ -5,12 +5,12 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
-from aiogram_dialog.widgets.kbd import Select, Cancel, Next, Back, Column, Button, Row
+from aiogram_dialog.widgets.kbd import Select, Cancel, Next, Back, Column, Button, Row, Group
 from aiogram_dialog.widgets.text import Const, Format, Jinja
 from sqlalchemy import select, and_, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, with_loader_criteria
 
-from db.models import Event
+from db.models import Event, User
 from db.models.Association import Association
 from dialogs.user.create_event import CreateEvent
 from dialogs.widgets.calendar import EventCalendar
@@ -57,27 +57,29 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
 
     stmt = (
         select(Event).
-        join(Association).
-        options(
-            selectinload(Event.user). # подгружаем пользователя
-            selectinload(Association.user) # ассоциативная таблица
-        ).
-        where(
-            and_(
-                Event.date_event == date_event, # за эту дату
-                Association.status == 'create' # находим только созданные
-            )
-        )
+        options(selectinload(Event.user)).
+        where(Event.date_event == date_event)
         .offset(offset)  # смещение
         .limit(1) # одна запись всегда
     )
+
     event = await session.scalar(stmt)
+    dialog_manager.dialog_data['event_id'] = event.id
+
+    current_usr_id = dialog_manager.event.from_user.id
+    join_count = sum(1 for assoc in event.user if assoc.status == 'join')
+    already_join = any(assoc.user_id == current_usr_id and assoc.status == 'join' for assoc in event.user)
+    is_owner = any(assoc.user_id == current_usr_id and assoc.status == 'create' for assoc in event.user)
+
     return {
         'title': event.title,
         'description': event.description,
         'date': event.date_event,
         'city': event.city.value,
-        'username': event.user[0].user.username, # user всегда один, где статус create
+        'username': event.username,
+        'is_owner': is_owner, # является ли создателем мероприятия
+        'already_join': already_join, # присоединился ли к мероприятию
+        'join_count': join_count, # количество присоединившеюся
     }
 
 async def switch_event(callback_query: CallbackQuery, button: Button, manager: DialogManager):
@@ -92,6 +94,34 @@ async def switch_event(callback_query: CallbackQuery, button: Button, manager: D
         offset = (offset - 1 + total_events) % total_events
 
     manager.dialog_data['offset'] = offset
+
+async def toggle_event(callback_query: CallbackQuery, button: Button, manager: DialogManager):
+    session = manager.middleware_data.get('session')
+    event_id = manager.dialog_data.get('event_id')
+    user_id = callback_query.from_user.id
+
+    # Проверяем, есть ли уже запись
+    stmt = select(Association).where(
+        Association.user_id == user_id,
+        Association.event_id == event_id,
+        Association.status == 'join'
+    )
+    result = await session.execute(stmt)
+    existing_assoc = result.scalar_one_or_none()
+
+    if existing_assoc:
+        # Удаляем существующую запись
+        await session.delete(existing_assoc)
+    else:
+        # Добавляем новую
+        assoc = Association(
+            user_id=user_id,
+            event_id=event_id,
+            status='join'
+        )
+        session.add(assoc)
+
+    await session.commit()
 
 dialog = Dialog(
     Window(
@@ -136,9 +166,24 @@ dialog = Dialog(
     ),
     Window(
         Jinja(DU_CALENDAR['result']),
+        Group(
+            Button(
+                Const(DU_CALENDAR['buttons']['join_event']),
+                id='join_event',
+                on_click=toggle_event,
+                when=~F['already_join']
+            ),
+            Button(
+                Const(DU_CALENDAR['buttons']['cancel_event']),
+                id='join_event',
+                on_click=toggle_event,
+                when=F['already_join']
+            ),
+            when=~F['is_owner']
+        ),
         Row(
-            Button(Const('<<'), id='prev_event', on_click=switch_event),
-            Button(Const('>>'), id='next_event', on_click=switch_event),
+            Button(Const(DU_CALENDAR['buttons']['next_event']), id='prev_event', on_click=switch_event),
+            Button(Const(DU_CALENDAR['buttons']['prev_event']), id='next_event', on_click=switch_event),
             when=F['dialog_data']['total_events'] > 1 # показывается если событий больше одного
         ),
         Back(Const(D_BUTTONS['back'])),

@@ -33,6 +33,7 @@ async def create_event(callback: CallbackQuery, button: Button, manager: DialogM
         description=manager.find('description').get_value(),
         city=manager.start_data['city'],
         date_event=manager.start_data['date'],
+        username=manager.event.from_user.username
     )
     user.events.append(assoc) # добавляем промежуточную запись
     session.add(user)
