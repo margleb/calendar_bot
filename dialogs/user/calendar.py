@@ -1,11 +1,13 @@
 from typing import Any
 
 from aiogram import F
-from aiogram.enums import ParseMode
+from aiogram.enums import ParseMode, ContentType
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.kbd import Select, Cancel, Next, Back, Column, Button, Row, Group
+from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Format, Jinja
 from sqlalchemy import select, and_, func
 from sqlalchemy.orm import selectinload, with_loader_criteria
@@ -88,9 +90,14 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
     already_join = any(assoc.user_id == current_usr_id and assoc.status == 'join' for assoc in event.user)
     is_owner = any(assoc.user_id == current_usr_id and assoc.status == 'create' for assoc in event.user)
 
+    photo = None
+    if event.image_id:
+        photo = MediaAttachment(ContentType.PHOTO, file_id=MediaId(event.image_id))
+
     return {
         'title': event.title,
         'description': event.description,
+        'photo': photo,
         'date': event.date_event,
         'city': event.city.value,
         'username': event.username,
@@ -184,6 +191,7 @@ dialog = Dialog(
         state=DCalendar.choice
     ),
     Window(
+DynamicMedia("photo", when=lambda data, widget, manager: data.get("photo") is not None),
         Jinja(DU_CALENDAR['result']),
         Group(
             Button(

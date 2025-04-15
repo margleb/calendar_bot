@@ -1,10 +1,11 @@
-from aiogram.enums import ParseMode
+from aiogram.enums import ParseMode, ContentType
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import Dialog, Window, DialogManager
-from aiogram_dialog.api.entities import EventContext
-from aiogram_dialog.widgets.input import TextInput
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
+from aiogram_dialog.widgets.input import TextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Cancel, Back, Next, Button
+from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja, Format
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -17,8 +18,19 @@ from lexicon.lexicon import D_BUTTONS, DU_CREATE_EVENT
 class CreateEvent(StatesGroup):
     title = State() # название
     description = State() # описание
+    image = State() # фотография
     event = State() # событие
     moderation = State() # модерация
+
+
+async def on_image_received(message: Message, message_input: MessageInput, manager: DialogManager):
+    if not message.photo:
+        await message.answer(DU_CREATE_EVENT['errors']['img_error'])
+    photo = message.photo[-1]
+    file_id = photo.file_id
+    manager.dialog_data['image_file_id'] = file_id
+    await manager.next()
+
 
 async def create_event(callback: CallbackQuery, button: Button, manager: DialogManager):
     session = manager.middleware_data.get('session')  # получаем сессию
@@ -31,6 +43,7 @@ async def create_event(callback: CallbackQuery, button: Button, manager: DialogM
     assoc.event = Event(
         title=manager.find('title').get_value(),
         description=manager.find('description').get_value(),
+        image_id=manager.dialog_data.get('image_file_id'), # добавляет фото, если оно есть
         city=manager.start_data['city'],
         date_event=manager.start_data['date'],
         username=manager.event.from_user.username
@@ -42,9 +55,14 @@ async def create_event(callback: CallbackQuery, button: Button, manager: DialogM
 
 
 async def get_event_data(dialog_manager: DialogManager, **kwargs):
+    image_id = dialog_manager.dialog_data.get('image_file_id')
+    photo = None
+    if image_id:
+        photo = MediaAttachment(ContentType.PHOTO, file_id=MediaId(image_id))
     return {
         'title': dialog_manager.find('title').get_value(),
         'description': dialog_manager.find('description').get_value(),
+        'photo': photo,
         'city': dialog_manager.start_data['city'],
         'date': dialog_manager.start_data['date'],
         'username': dialog_manager.event.from_user.username,
@@ -75,6 +93,13 @@ dialog = Dialog(
        state=CreateEvent.description
    ),
    Window(
+       Const(DU_CREATE_EVENT['image']),
+       MessageInput(on_image_received, content_types=[ContentType.ANY]),
+       Next(Const(DU_CREATE_EVENT['buttons']['no_image'])),
+       state=CreateEvent.image
+   ),
+   Window(
+       DynamicMedia("photo", when=lambda data, widget, manager: data.get("photo") is not None),
        Jinja(DU_CREATE_EVENT['result']),
        Button(
            Const(DU_CREATE_EVENT['buttons']['create_event']),
