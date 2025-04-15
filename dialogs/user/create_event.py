@@ -19,6 +19,7 @@ class CreateEvent(StatesGroup):
     title = State() # название
     description = State() # описание
     image = State() # фотография
+    participants = State() # количество участников
     event = State() # событие
     moderation = State() # модерация
 
@@ -26,6 +27,7 @@ class CreateEvent(StatesGroup):
 async def on_image_received(message: Message, message_input: MessageInput, manager: DialogManager):
     if not message.photo:
         await message.answer(DU_CREATE_EVENT['errors']['img_error'])
+        return
     photo = message.photo[-1]
     file_id = photo.file_id
     manager.dialog_data['image_file_id'] = file_id
@@ -44,6 +46,7 @@ async def create_event(callback: CallbackQuery, button: Button, manager: DialogM
         title=manager.find('title').get_value(),
         description=manager.find('description').get_value(),
         image_id=manager.dialog_data.get('image_file_id'), # добавляет фото, если оно есть
+        participants=manager.find('participants').get_value(),
         city=manager.start_data['city'],
         date_event=manager.start_data['date'],
         username=manager.event.from_user.username
@@ -63,6 +66,7 @@ async def get_event_data(dialog_manager: DialogManager, **kwargs):
         'title': dialog_manager.find('title').get_value(),
         'description': dialog_manager.find('description').get_value(),
         'photo': photo,
+        'participants': dialog_manager.find('participants').get_value(),
         'city': dialog_manager.start_data['city'],
         'date': dialog_manager.start_data['date'],
         'username': dialog_manager.event.from_user.username,
@@ -97,6 +101,16 @@ dialog = Dialog(
        MessageInput(on_image_received, content_types=[ContentType.ANY]),
        Next(Const(DU_CREATE_EVENT['buttons']['no_image'])),
        state=CreateEvent.image
+   ),
+   Window(
+      Const(DU_CREATE_EVENT['participants']),
+      TextInput(
+          id='participants',
+          type_factory=int,
+          on_success=Next()
+      ),
+       Back(Const(D_BUTTONS['back'])),
+       state=CreateEvent.participants,
    ),
    Window(
        DynamicMedia("photo", when=lambda data, widget, manager: data.get("photo") is not None),

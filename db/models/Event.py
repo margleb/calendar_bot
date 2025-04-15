@@ -18,7 +18,7 @@ class Event(TimestampMixin, Base):
     title: Mapped[str] = mapped_column(String(50))
     description: Mapped[str] = mapped_column(Text)
     image_id: Mapped[str] = mapped_column(String, nullable=True)
-    # participants: Mapped[int] = mapped_column(Integer)
+    participants: Mapped[int] = mapped_column(Integer)
     city: Mapped[CityEnum] = mapped_column(Enum(CityEnum, values_callable=lambda x: [e.value for e in x]))
     date_event: Mapped[Date] = mapped_column(Date)
     # moderation: Mapped[bool] = mapped_column(Boolean, server_default='false')

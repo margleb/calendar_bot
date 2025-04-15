@@ -89,6 +89,9 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
     join_count = sum(1 for assoc in event.user if assoc.status == 'join')
     already_join = any(assoc.user_id == current_usr_id and assoc.status == 'join' for assoc in event.user)
     is_owner = any(assoc.user_id == current_usr_id and assoc.status == 'create' for assoc in event.user)
+    full_participants = join_count >= event.participants
+    print(is_owner, event.participants, join_count, already_join)
+    participants = f"{event.participants}/{join_count}"
 
     photo = None
     if event.image_id:
@@ -98,12 +101,13 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
         'title': event.title,
         'description': event.description,
         'photo': photo,
+        'participants': participants,
         'date': event.date_event,
         'city': event.city.value,
         'username': event.username,
         'is_owner': is_owner, # является ли создателем мероприятия
         'already_join': already_join, # присоединился ли к мероприятию
-        'join_count': join_count, # количество присоединившеюся
+        'full_participants': full_participants, # заполнено ли событие участниками
     }
 
 async def switch_event(callback_query: CallbackQuery, button: Button, manager: DialogManager):
@@ -206,7 +210,7 @@ DynamicMedia("photo", when=lambda data, widget, manager: data.get("photo") is no
                 on_click=toggle_event,
                 when=F['already_join']
             ),
-            when=~F['is_owner']
+            when=(~F['is_owner'] & ~F['full_participants']) | F['already_join']
         ),
         Row(
             Button(Const(DU_CALENDAR['buttons']['prev_event']), id='prev_event', on_click=switch_event),
