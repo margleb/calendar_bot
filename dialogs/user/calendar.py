@@ -154,16 +154,18 @@ async def toggle_event(callback_query: CallbackQuery, button: Button, manager: D
 dialog = Dialog(
     Window(
         Const(DU_CALENDAR['city']),
-        Select(
-            Format("{item}"),
-            id='city',
-            item_id_getter=str,
-            items=['Москва', 'Санкт-Петербург'],
-            on_click=on_city_selected
+        Column(
+            Select(
+                Format("{item}"),
+                id='city',
+                item_id_getter=str,
+                items=['Москва', 'Санкт-Петербург'],
+                on_click=on_city_selected,
+            ),
         ),
         Cancel(Const(D_BUTTONS['back'])),
         parse_mode=ParseMode.HTML,
-        state=DCalendar.city
+        state=DCalendar.city,
     ),
     Window(
         Const(DU_CALENDAR['calendar']),
