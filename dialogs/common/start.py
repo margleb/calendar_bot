@@ -1,7 +1,7 @@
 from aiogram.enums import ParseMode
 from aiogram.fsm.state import StatesGroup, State
 from aiogram_dialog import Dialog, Window, DialogManager
-from aiogram_dialog.widgets.kbd import Button, Row, Start
+from aiogram_dialog.widgets.kbd import Button, Start, Column
 from aiogram_dialog.widgets.text import Const, Format
 
 from dialogs.user.calendar import DCalendar
@@ -21,7 +21,7 @@ async def get_start_data(dialog_manager: DialogManager, **kwargs):
 dialog = Dialog(
     Window(
         Format(DC_START['start']),
-        Row(
+        Column(
             Button(Const(DC_START['buttons']['account']), id='account'),
             Start(
                 Const(DC_START['buttons']['calendar']),

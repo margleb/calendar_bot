@@ -23,7 +23,6 @@ class CreateEvent(StatesGroup):
     event = State() # событие
     moderation = State() # модерация
 
-
 async def on_image_received(message: Message, message_input: MessageInput, manager: DialogManager):
     if not message.photo:
         await message.answer(DU_CREATE_EVENT['errors']['img_error'])
@@ -33,6 +32,20 @@ async def on_image_received(message: Message, message_input: MessageInput, manag
     manager.dialog_data['image_file_id'] = file_id
     await manager.next()
 
+async def validate_title(message: Message, **kwargs):
+    if len(message.text) < 5 or len(message.text) > 30:
+        await message.answer(DU_CREATE_EVENT['errors']['title_error'], parse_mode=ParseMode.HTML)
+        return
+
+async def validate_description(message: Message, **kwargs):
+    if len(message.text) < 15 or len(message.text) > 100:
+        await message.answer(DU_CREATE_EVENT['errors']['description_error'], parse_mode=ParseMode.HTML)
+        return
+
+async def validate_participants(message: Message, **kwargs):
+    if not message.text.isdigit():
+        await message.answer(DU_CREATE_EVENT['errors']['participants_error'])
+        pass
 
 async def create_event(callback: CallbackQuery, button: Button, manager: DialogManager):
     session = manager.middleware_data.get('session')  # получаем сессию
@@ -79,7 +92,8 @@ dialog = Dialog(
        TextInput(
            id='title',
            type_factory=str,
-           on_success=Next()
+           on_success=Next(),
+           filter=validate_title,
        ),
        Cancel(Const(D_BUTTONS['back'])),
        parse_mode=ParseMode.HTML,
@@ -90,7 +104,8 @@ dialog = Dialog(
        TextInput(
            id='description',
            type_factory=str,
-           on_success=Next()
+           on_success=Next(),
+           filter=validate_description,
        ),
        Cancel(Const(D_BUTTONS['back'])),
        parse_mode=ParseMode.HTML,
@@ -107,6 +122,7 @@ dialog = Dialog(
       TextInput(
           id='participants',
           type_factory=int,
+          filter=validate_participants,
           on_success=Next()
       ),
        Back(Const(D_BUTTONS['back'])),

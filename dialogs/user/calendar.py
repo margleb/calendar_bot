@@ -64,7 +64,7 @@ async def get_dialog_data(dialog_manager: DialogManager, **kwargs) -> dict:
 
     return {
         'city': dialog_manager.dialog_data.get('city'),
-        'full_events': total_user_events > 1, # максимальное кол-во мероприятий за раз
+        'full_events': total_user_events > 5, # максимальное кол-во мероприятий за раз
         'date': date_event,
     }
 
