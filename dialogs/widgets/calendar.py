@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, date
 from aiogram.types import InlineKeyboardButton
+from sqlalchemy import select, func
 
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import (
@@ -12,6 +13,9 @@ from aiogram_dialog.widgets.kbd.calendar_kbd import (
     CalendarMonthView,
     CalendarYearsView, CalendarDaysView, raw_from_date, CallbackGenerator
 )
+
+from db.models import Event
+
 
 class EventCalendarDaysView(CalendarDaysView):
     def __init__(self, callback_generator: CallbackGenerator, **kwargs):
@@ -35,12 +39,23 @@ class EventCalendarDaysView(CalendarDaysView):
 
         raw_date = raw_from_date(selected_date)
 
-        suffix = "🔥"
         rendered_text = await text.render_text(current_data, manager)
 
+        session = manager.middleware_data.get('session')
+        stmt = select(func.count(Event.id)).where(Event.date_event == selected_date)
+        events_num = await session.scalar(stmt)
+
+        if events_num == 0:
+            event = rendered_text  # Например, "Нет событий"
+        elif 1 <= events_num <= 4:
+            event = '🟢'  # Небольшое количество событий
+        elif 5 <= events_num <= 9:
+            event = '🟡'  # Среднее количество
+        else:
+            event = '🟠'  # Много событий
+
         return InlineKeyboardButton(
-            # text=f"{suffix}{rendered_text}",
-            text=f"{suffix}",
+            text=f"{event}",
             callback_data=self.callback_generator(str(raw_date)),
         )
 

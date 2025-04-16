@@ -90,7 +90,6 @@ async def get_current_event(dialog_manager: DialogManager, **kwargs) -> dict:
     already_join = any(assoc.user_id == current_usr_id and assoc.status == 'join' for assoc in event.user)
     is_owner = any(assoc.user_id == current_usr_id and assoc.status == 'create' for assoc in event.user)
     full_participants = join_count >= event.participants
-    print(is_owner, event.participants, join_count, already_join)
     participants = f"{event.participants}/{join_count}"
 
     photo = None

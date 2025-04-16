@@ -35,17 +35,20 @@ async def on_image_received(message: Message, message_input: MessageInput, manag
 async def validate_title(message: Message, **kwargs):
     if len(message.text) < 5 or len(message.text) > 30:
         await message.answer(DU_CREATE_EVENT['errors']['title_error'], parse_mode=ParseMode.HTML)
-        return
+        return False
+    return True
 
 async def validate_description(message: Message, **kwargs):
     if len(message.text) < 15 or len(message.text) > 100:
         await message.answer(DU_CREATE_EVENT['errors']['description_error'], parse_mode=ParseMode.HTML)
-        return
+        return False
+    return True
 
 async def validate_participants(message: Message, **kwargs):
-    if not message.text.isdigit():
+    if not message.text.isdigit() or len(message.text) < 1 or len(message.text) > 30:
         await message.answer(DU_CREATE_EVENT['errors']['participants_error'])
-        pass
+        return False
+    return True
 
 async def create_event(callback: CallbackQuery, button: Button, manager: DialogManager):
     session = manager.middleware_data.get('session')  # получаем сессию
