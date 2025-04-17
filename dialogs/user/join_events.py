@@ -34,7 +34,7 @@ async def switch_event(callback_query: CallbackQuery, button: Button, manager: D
 
 async def get_user_events(dialog_manager:DialogManager, **kwargs):
     session = dialog_manager.middleware_data['session']
-    offset = dialog_manager.dialog_data.get('offset')
+    offset = dialog_manager.dialog_data.get('offset', 0)
     user_id = dialog_manager.event.from_user.id
     stmt = (
         select(

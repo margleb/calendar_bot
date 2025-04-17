@@ -45,9 +45,16 @@ async def validate_description(message: Message, **kwargs):
     return True
 
 async def validate_participants(message: Message, **kwargs):
-    if not message.text.isdigit() or len(message.text) < 1 or len(message.text) > 30:
+    if not message.text.isdigit():
         await message.answer(DU_CREATE_EVENT['errors']['participants_error'])
         return False
+
+    participants_count = int(message.text)  # Преобразуем текст в целое число
+
+    if participants_count < 1 or participants_count > 30:
+        await message.answer(DU_CREATE_EVENT['errors']['participants_error'])
+        return False
+
     return True
 
 async def create_event(callback: CallbackQuery, button: Button, manager: DialogManager):
