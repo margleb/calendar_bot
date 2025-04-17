@@ -207,7 +207,7 @@ DynamicMedia("photo", when=lambda data, widget, manager: data.get("photo") is no
             ),
             Button(
                 Const(DU_CALENDAR['buttons']['cancel_event']),
-                id='join_event',
+                id='cancel_event',
                 on_click=toggle_event,
                 when=F['already_join']
             ),
