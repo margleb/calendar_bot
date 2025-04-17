@@ -21,12 +21,12 @@ async def cmd_support(message: Message, dialog_manager: DialogManager):
 
 @router.message(Command('account'))
 async def cmd_support(message: Message, dialog_manager: DialogManager):
-    await dialog_manager.start(DAccount.account, mode=StartMode.RESET_STACK)
+    await dialog_manager.start(DAccount.account, mode=StartMode.NORMAL)
 
 
 @router.message(Command('calendar'))
 async def cmd_support(message: Message, dialog_manager: DialogManager):
-    await dialog_manager.start(DCalendar.city, mode=StartMode.RESET_STACK)
+    await dialog_manager.start(DCalendar.city, mode=StartMode.NORMAL)
 
 
 # Этот срабатывает из no_command
