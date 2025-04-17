@@ -11,10 +11,10 @@ async def set_main_menu(bot: Bot):
                    description='Начать пользоваться ботом'),
         BotCommand(command='/support',
                    description='Поддержка'),
-        # BotCommand(command='/contacts',
-        #            description='Другие способы связи'),
-        # BotCommand(command='/payments',
-        #            description='Платежи')
+        BotCommand(command='/account',
+                   description='Перейти в аккаунт'),
+        BotCommand(command='/calendar',
+                   description='Перейти в календарь'),
     ]
 
     await bot.set_my_commands(main_menu_commands)
