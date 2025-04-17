@@ -4,6 +4,7 @@ from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.kbd import Button, Start, Column
 from aiogram_dialog.widgets.text import Const, Format
 
+from dialogs.user.account import DAccount
 from dialogs.user.calendar import DCalendar
 from lexicon.lexicon import DC_START
 
@@ -22,12 +23,17 @@ dialog = Dialog(
     Window(
         Format(DC_START['start']),
         Column(
-            Button(Const(DC_START['buttons']['account']), id='account'),
+            Start(
+                Const(DC_START['buttons']['account']),
+                id='account',
+                state=DAccount.account
+            ),
             Start(
                 Const(DC_START['buttons']['calendar']),
                 id='calendar',
                 state=DCalendar.city
             ),
+            Button(Const(DC_START['buttons']['support']), id='support')
         ),
         parse_mode=ParseMode.HTML,
         getter=get_start_data,

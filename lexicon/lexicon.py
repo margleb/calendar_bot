@@ -8,7 +8,8 @@ DC_START: dict[str, str | dict] = {
     ),
     'buttons': {
         'account': "👤 Мой аккаунт",
-        'calendar': "📅 Календарь событий"
+        'calendar': "📅 Календарь событий",
+        'support': "💬 Поддержка"
     }
 }
 

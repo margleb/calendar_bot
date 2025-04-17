@@ -2,7 +2,7 @@ from typing import Any
 
 from aiogram import F
 from aiogram.enums import ParseMode, ContentType
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.api.entities import MediaAttachment, MediaId

@@ -88,7 +88,6 @@ async def get_event_data(dialog_manager: DialogManager, **kwargs):
         'username': dialog_manager.event.from_user.username,
     }
 
-
 dialog = Dialog(
    Window(
        Const(DU_CREATE_EVENT['title']),
