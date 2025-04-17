@@ -128,6 +128,7 @@ dialog = Dialog(
           on_success=Next()
       ),
        Back(Const(D_BUTTONS['back'])),
+       parse_mode=ParseMode.HTML,
        state=CreateEvent.participants,
    ),
    Window(
