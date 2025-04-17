@@ -47,15 +47,11 @@ class EventCalendarDaysView(CalendarDaysView):
 
         if events_num == 0:
             event = rendered_text  # Например, "Нет событий"
-        elif 1 <= events_num <= 4:
-            event = '🟢'  # Небольшое количество событий
-        elif 5 <= events_num <= 9:
-            event = '🟡'  # Среднее количество
         else:
-            event = '🟠'  # Много событий
+            event = f"{rendered_text}❗"  # Небольшое количество событий
 
         return InlineKeyboardButton(
-            text=f"{event}",
+            text=event,
             callback_data=self.callback_generator(str(raw_date)),
         )
 

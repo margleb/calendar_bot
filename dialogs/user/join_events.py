@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.kbd import Cancel, Button, Row
+from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja
 from sqlalchemy import select, and_, func
 from sqlalchemy.orm import selectinload
@@ -69,7 +70,6 @@ async def get_user_events(dialog_manager:DialogManager, **kwargs):
     if event.image_id:
         photo = MediaAttachment(ContentType.PHOTO, file_id=MediaId(event.image_id))
 
-
     return {
         'title': event.title,
         'description': event.description,
@@ -104,6 +104,7 @@ async def cancel_event(callback_query: CallbackQuery, button: Button, manager: D
 
 dialog = Dialog(
     Window(
+DynamicMedia("photo", when=lambda data, widget, manager: data.get("photo") is not None),
         Jinja(DU_JOIN_EVENTS['result']),
         Button(Const(DU_JOIN_EVENTS['buttons']['cancel_event']), id='cancel_event', on_click=cancel_event, when=F['has_events']),
         Row(
