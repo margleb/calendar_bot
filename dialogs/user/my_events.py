@@ -4,6 +4,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.kbd import Cancel, Button
+from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Jinja
 from sqlalchemy import select, and_, func
 from sqlalchemy.dialects import postgresql
@@ -71,6 +72,7 @@ async def get_event(dialog_manager:DialogManager, **kwargs) -> dict:
 
 dialog = Dialog(
     Window(
+DynamicMedia("photo", when=lambda data, widget, manager: data.get("photo") is not None),
       Jinja(DU_MY_EVENTS['result']),
       Button(Const(DU_MY_EVENTS['buttons']['delete_event']), id='delete_event'),
       Cancel(Const(D_BUTTONS['back'])),
